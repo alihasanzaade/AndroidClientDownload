@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="net.ericsson.emovs.download">
+    <application>
+        <service
+            android:name=".EMPDownloadService"
+            android:exported="true">
+        </service>
+        <!--            android:process=":empdownloadservice"-->
+    </application>
+</manifest>
