@@ -183,6 +183,12 @@ public class DownloadItem implements IDownload {
     }
 
     private void downloadMedia(String downloadFolder, Entitlement entitlement, final IDownloadEventListener callback) {
+        if (this.downloaderWorker.getState() != Thread.State.NEW) {
+            if (this.downloaderWorker.isAlive()) {
+                this.downloaderWorker.interrupt();
+            }
+            this.downloaderWorker = new DashDownloader(this.downloaderWorker);
+        }
         this.downloaderWorker.init(entitlement.mediaLocator, downloadFolder);
         if (callback != null) {
             this.downloaderWorker.setCallback("SINGLE_DOWNLOAD_ACTIVITY_CALLBACK", callback);

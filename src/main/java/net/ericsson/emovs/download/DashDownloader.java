@@ -67,6 +67,14 @@ class DashDownloader extends Thread {
         this.parent = parent;
     }
 
+	public DashDownloader(DashDownloader other) {
+		this.chunkMemory = new HashMap<>();
+		this.currentIndexMap = new HashMap<>();
+		this.pendingWriters = new ArrayList<>();
+		this.stateUpdaters = other.stateUpdaters;
+		this.parent = other.parent;
+	}
+
 	public void init(String manifestUrl, String destFolder) {
 		this.conf = new Configuration(manifestUrl, destFolder);
 	}
@@ -141,7 +149,7 @@ class DashDownloader extends Thread {
 			}
         }
 
-		waitForWriters();
+		//waitForWriters();
 
 		notifyUpdatersProgress(100.0);
 		notifyUpdatersSuccess();
@@ -375,14 +383,22 @@ class DashDownloader extends Thread {
 
     public boolean downloadSegments () throws Exception {	
     	while (this.pendingWriters.size() > MAX_CONCURRENT_DOWNLOADS) {
+			ArrayList<AsyncFileWriter> toRemove = new ArrayList<>();
 			for(AsyncFileWriter ifw : this.pendingWriters) {
 				if(ifw.error) {
 					notifyUpdatersError(ErrorCodes.DOWNLOAD_SEGMENT_FAILED, "Failed to download media segment.");
 					dispose();
 					return false;
 				}
+				if(ifw.finished) {
+					toRemove.add(ifw);
+				}
 			}
-    		Thread.sleep(50);
+			this.pendingWriters.removeAll(toRemove);
+			if(isEndOfStream()) {
+				return true;
+			}
+			Thread.sleep(1);
     	}
     	
     	ArrayList<AsyncFileWriter> writers = new ArrayList<AsyncFileWriter>();
@@ -531,7 +547,7 @@ class DashDownloader extends Thread {
             	return false;
             }
     		
-    		parent.removeWriter(this);
+    		//parent.removeWriter(this);
     		
             return true;
     	}
