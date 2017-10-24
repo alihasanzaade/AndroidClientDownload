@@ -44,8 +44,12 @@ dependencies {
     })
     compile 'com.android.support:support-core-utils:26.0.1'
     compile 'com.google.android.exoplayer:exoplayer:r2.5.0'
-    //compile project(':libraries:exposure')
-    compile 'com.github.EricssonBroadcastServices:AndroidClientExposure:master-SNAPSHOT'
+    if (project.hasProperty('hasParentProject')) {
+        compile project(':libraries:exposure')
+    }
+    else {
+        compile 'com.github.EricssonBroadcastServices:AndroidClientExposure:master-SNAPSHOT'
+    }
     testCompile 'junit:junit:4.12'
 }
 

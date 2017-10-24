@@ -76,7 +76,7 @@ public class DownloadItem implements IDownload {
         this.app = app;
         this.uuid = info.uuid;
         this.state = info.state;
-        this.credentialsStorage = SharedPropertiesICredentialsStorage.getInstance(app);
+        this.credentialsStorage = SharedPropertiesICredentialsStorage.getInstance();
         this.downloaderWorker = new DashDownloader(this);
         this.progress = info.progress;
         this.downloadPath = info.downloadPath;
@@ -87,7 +87,7 @@ public class DownloadItem implements IDownload {
     public DownloadItem(Context app) {
         this.app = app;
         this.uuid = UUID.randomUUID();
-        this.credentialsStorage = SharedPropertiesICredentialsStorage.getInstance(app);
+        this.credentialsStorage = SharedPropertiesICredentialsStorage.getInstance();
         this.downloaderWorker = new DashDownloader(this);
         setState(STATE_QUEUED);
     }

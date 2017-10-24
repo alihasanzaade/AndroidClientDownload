@@ -8,6 +8,7 @@ import com.ebs.android.exposure.interfaces.IPlayable;
 import com.ebs.android.utilities.ServiceUtils;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
+import net.ericsson.emovs.utilities.ContextRegistry;
 
 import java.util.ArrayList;
 
@@ -25,8 +26,8 @@ public class EMPDownloadProvider {
         private final static EMPDownloadProvider sInstance = new EMPDownloadProvider();
     }
 
-    public static EMPDownloadProvider getInstance(Context app) {
-        EMPDownloadProviderHolder.sInstance.bind(app);
+    public static EMPDownloadProvider getInstance() {
+        EMPDownloadProviderHolder.sInstance.bind(ContextRegistry.get());
         return EMPDownloadProviderHolder.sInstance;
     }
 
