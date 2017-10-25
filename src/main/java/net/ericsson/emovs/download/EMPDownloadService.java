@@ -86,12 +86,13 @@ public class EMPDownloadService extends Service {
                 //    break;
                 //}
                 if(DownloadItemManager.getInstance().hasAssetsToDelete()) {
-                    new RunnableThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            DownloadItemManager.getInstance().flushRemovedAssets();
-                        }
-                    }).start();
+                    //new RunnableThread(new Runnable() {
+                    //    @Override
+                    //    public void run() {
+                    //        DownloadItemManager.getInstance().flushRemovedAssets();
+                    //    }
+                    //}).start();
+                    DownloadItemManager.getInstance().flushRemovedAssets();
                 }
                 if (DownloadItemManager.getInstance().count(DownloadItem.STATE_QUEUED) > 0) {
                     if (DownloadItemManager.getInstance().canStartNewDownload()) {

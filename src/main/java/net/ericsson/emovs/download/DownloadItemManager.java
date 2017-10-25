@@ -77,7 +77,7 @@ public class DownloadItemManager {
     }
 
     public boolean canStartNewDownload() {
-        return count(DownloadItem.STATE_DOWNLOADING) < maxConcurrentDownloads;
+        return count(DownloadItem.STATE_PAUSED) + count(DownloadItem.STATE_DOWNLOADING) < maxConcurrentDownloads;
     }
 
     public boolean hasAssetsToDelete() {

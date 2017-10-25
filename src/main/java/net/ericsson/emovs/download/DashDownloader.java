@@ -135,6 +135,9 @@ class DashDownloader extends Thread {
             notifyUpdatersStart();
 			download();
 		}
+        catch(InterruptedException e) {
+            e.printStackTrace();
+        }
 		catch(Exception e) {
 			e.printStackTrace();
 			notifyUpdatersError(ErrorCodes.DOWNLOAD_RUNTIME_ERROR, e.getMessage());

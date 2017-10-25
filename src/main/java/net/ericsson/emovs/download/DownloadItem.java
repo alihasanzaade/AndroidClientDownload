@@ -112,6 +112,7 @@ public class DownloadItem implements IDownload {
                 this.downloaderWorker.interrupt();
             }
         }
+        this.downloaderWorker.dispose();
     }
 
     public String getDownloadPath() {
