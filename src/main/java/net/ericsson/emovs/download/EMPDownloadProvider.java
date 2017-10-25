@@ -19,7 +19,6 @@ import java.util.ArrayList;
 public class EMPDownloadProvider {
     private static final String TAG = EMPDownloadProvider.class.toString();
 
-    Context app;
     Intent downloadServiceIntent;
 
     private static class EMPDownloadProviderHolder {
@@ -27,24 +26,10 @@ public class EMPDownloadProvider {
     }
 
     public static EMPDownloadProvider getInstance() {
-        EMPDownloadProviderHolder.sInstance.bind(ContextRegistry.get());
         return EMPDownloadProviderHolder.sInstance;
     }
 
     protected EMPDownloadProvider() {
-    }
-
-    public void bind(Context app) {
-        try {
-            if (this.app == app) {
-                return;
-            }
-            DownloadItemManager.bind(app);
-            this.app = app;
-            startService();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public void add(IPlayable playable) throws Exception {
@@ -79,32 +64,28 @@ public class EMPDownloadProvider {
         return DownloadItemManager.getInstance().getDownloads();
     }
 
-    public void syncWithStorage() {
-        DownloadItemManager.getInstance().syncWithStorage();
-    }
-
     public void startService() throws Exception {
-        if (this.app == null) {
+        if (ContextRegistry.get() == null) {
             throw  new Exception("APP_NOT_BOUND_TO_DOWNLOADER_PROVIDER");
         }
         if (isDownloadServiceRunning() == false) {
-            this.downloadServiceIntent = new Intent(app, EMPDownloadService.class);
+            this.downloadServiceIntent = new Intent(ContextRegistry.get(), EMPDownloadService.class);
             this.downloadServiceIntent.setAction(EMPDownloadService.class.getName());
-            app.startService(downloadServiceIntent);
+            ContextRegistry.get().startService(downloadServiceIntent);
         }
     }
 
     public void stopService() {
         if (isDownloadServiceRunning() == true) {
-            app.stopService(this.downloadServiceIntent);
+            ContextRegistry.get().stopService(this.downloadServiceIntent);
         }
     }
 
     public boolean isDownloadServiceRunning() {
-        if (this.app == null) {
+        if (ContextRegistry.get() == null) {
             return false;
         }
-        return ServiceUtils.isServiceRunning(this.app, EMPDownloadService.class);
+        return ServiceUtils.isServiceRunning(ContextRegistry.get(), EMPDownloadService.class);
     }
 
 }

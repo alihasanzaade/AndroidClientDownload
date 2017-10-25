@@ -21,6 +21,7 @@ import com.ebs.android.utilities.FileSerializer;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
+import net.ericsson.emovs.utilities.ContextRegistry;
 
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
@@ -188,7 +189,7 @@ public class DownloadItem implements IDownload {
         if (licenseDetails == null) {
             return;
         }
-        WidevineOfflineLicenseManager downloader = new WidevineOfflineLicenseManager(this.app);
+        WidevineOfflineLicenseManager downloader = new WidevineOfflineLicenseManager(ContextRegistry.get());
 
         String licenseWithToken = Uri.parse(licenseDetails.first)
                 .buildUpon()

@@ -8,6 +8,7 @@ import com.ebs.android.exposure.interfaces.IPlayable;
 import com.ebs.android.utilities.FileSerializer;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
+import net.ericsson.emovs.utilities.ContextRegistry;
 
 import org.apache.commons.io.FileUtils;
 
@@ -32,7 +33,6 @@ public class DownloadItemManager {
 
     private final int DEFAULT_CONCURRENT_DOWNLOADS = 2;
 
-    private Context app;
     private HashMap<String, DownloadItem> downloadItems;
     private LinkedList<String> assetsToDelete;
     private int maxConcurrentDownloads;
@@ -45,10 +45,6 @@ public class DownloadItemManager {
         return DownloadItemManagerHolder.sInstance;
     }
 
-    public static void bind(Context app) {
-        getInstance().app = app;
-    }
-
     protected DownloadItemManager() {
         this.downloadItems = new HashMap<>();
         this.maxConcurrentDownloads = DEFAULT_CONCURRENT_DOWNLOADS;
@@ -59,14 +55,14 @@ public class DownloadItemManager {
         if (this.downloadItems.containsKey(playable.getId())) {
             return false;
         }
-        DownloadItem item = new DownloadItem(this.app);
+        DownloadItem item = new DownloadItem(ContextRegistry.get());
         item.setOnlinePlayable(playable);
         this.downloadItems.put(playable.getId(), item);
         return true;
     }
 
     private void createItemFromDownloadInfo(DownloadInfo info) {
-        DownloadItem item = new DownloadItem(this.app, info);
+        DownloadItem item = new DownloadItem(ContextRegistry.get(), info);
         this.downloadItems.put(info.onlinePlayable.getId(), item);
     }
 

@@ -18,12 +18,10 @@ public class EMPDownloadService extends Service {
 
     static final int NOTIFICATION_ID = 543;
     //private static boolean isRunning;
-    private DownloadItemManager manager;
 
     public EMPDownloadService() {
         super();
         //isRunning = false;
-        this.manager = new DownloadItemManager();
     }
 
     @Override
@@ -79,7 +77,7 @@ public class EMPDownloadService extends Service {
     }
 
     private void run() {
-//        this.manager.syncWithStorage();
+        DownloadItemManager.getInstance().syncWithStorage();
         for (;;) {
             try {
                 //if (isRunning == false) {
