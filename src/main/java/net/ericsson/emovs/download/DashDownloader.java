@@ -8,8 +8,10 @@ import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +30,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -38,7 +41,8 @@ class DashDownloader extends Thread {
 	final int MAX_DOWNLOAD_ATTEMPTS = 5;
 	final int MAX_SEGMENT_DOWNLOAD_TIMEOUT = 20000;
 	final int MAX_HTTP_CONNECTION_TIMEOUT = 1000;
-	
+    final int FIRST_INDEX = 1;
+
 	final String ADAPTATION_SET = "//urn:mpeg:dash:schema:mpd:2011:AdaptationSet";
 	final String MPD = "//urn:mpeg:dash:schema:mpd:2011:MPD";
 	final String REPRESENTATION = "Representation";
@@ -207,7 +211,6 @@ class DashDownloader extends Thread {
     }
     
     public int getIndex(String hash) {
-    	int FIRST_INDEX = 1;
     	if(currentIndexMap.containsKey(hash)) {
     		return currentIndexMap.get(hash);	
     	}
@@ -225,7 +228,7 @@ class DashDownloader extends Thread {
     	
     	currentIndexMap.put(hash, newV);
     }
-    
+
     public boolean hasManifest () {
 		try {
 			URL u = new URL(conf.manifestUrl); 
@@ -400,6 +403,34 @@ class DashDownloader extends Thread {
         }  
     }
 
+    public void determineInitialChunkIndex(String indexId, String urlRaw, String destFilePath) {
+        int chunkIndex = getIndex(indexId);
+        if (chunkIndex == FIRST_INDEX) {
+            String fileNamePath = null;
+            try {
+                fileNamePath = new URL(urlRaw).getFile().replace("$Number$", "*");
+                File destFile = new File(destFilePath + fileNamePath);
+                String fileWildcard = destFile.getName();
+                FileFilter fileFilter = new WildcardFileFilter(fileWildcard);
+                File[] alreadyPresent = destFile.getParentFile().listFiles(fileFilter);
+                HashMap<String, Object> memory = new HashMap<>();
+                for(File f : alreadyPresent) {
+                    memory.put(f.getName(), null);
+                }
+                for (int i = FIRST_INDEX; i < Integer.MAX_VALUE; ++i) {
+                    String fToCheck = new URL(urlRaw).getFile().replace("$Number$", Integer.toString(i));
+                    if (memory.containsKey(new File(fToCheck).getName()) == false) {
+                        incIndex(indexId, i - FIRST_INDEX);
+                        break;
+                    }
+                }
+            }
+            catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public boolean downloadSegments () throws Exception {	
     	while (this.pendingWriters.size() > MAX_CONCURRENT_DOWNLOADS) {
 			ArrayList<AsyncFileWriter> toRemove = new ArrayList<>();
@@ -430,6 +461,9 @@ class DashDownloader extends Thread {
                 String urlRaw = conf.baseUrls[i] + segmentUrl.replace ("$RepresentationID$", id);
                 
                 String indexId = i + ":" + id;
+
+                determineInitialChunkIndex(indexId, urlRaw, conf.folder);
+
                 int chunkIndex = getIndex(indexId);
                 final String chunkIndexStr = Integer.toString(chunkIndex);
 
@@ -447,8 +481,9 @@ class DashDownloader extends Thread {
                 		
                 final String url = urlRaw.replace("$Number$", chunkIndexStr);
 
-                String destFilePath = conf.folder + new URL(url).getFile();
-                
+                String fileName = new URL(url).getFile();
+                String destFilePath = conf.folder + fileName;
+
                 boolean contains = this.chunkMemory.containsKey(destFilePath);
                 
                 if (contains == false) {
