@@ -109,20 +109,20 @@ public class DownloadItemManager {
         this.downloadItems.get(playable.getId()).pause();
     }
 
-    public void delete(IPlayable playable) {
-        if (this.downloadItems.containsKey(playable.getId()) == false) {
-            return;
-        }
-        this.downloadItems.get(playable.getId()).delete();
-        this.assetsToDelete.add(playable.getId());
-    }
-
     public void resume(IPlayable playable) {
         boolean contains = this.downloadItems.containsKey(playable.getId());
         if(contains == false) {
             return;
         }
         this.downloadItems.get(playable.getId()).resume();
+    }
+
+    public void delete(IPlayable playable) {
+        if (this.downloadItems.containsKey(playable.getId()) == false) {
+            return;
+        }
+        this.downloadItems.get(playable.getId()).delete();
+        this.assetsToDelete.add(playable.getId());
     }
 
     public void retry(IPlayable playable) {

@@ -117,6 +117,18 @@ class DashDownloader extends Thread {
 		}
 	}
 
+    public void notifyUpdatersPause() {
+        for(IDownloadEventListener callback : this.stateUpdaters.values()) {
+            callback.onPause();
+        }
+    }
+
+    public void notifyUpdatersResume() {
+        for(IDownloadEventListener callback : this.stateUpdaters.values()) {
+            callback.onResume();
+        }
+    }
+
 	@Override
 	public void run() {
 		try {
@@ -142,6 +154,10 @@ class DashDownloader extends Thread {
 		}
         
 		while (isEndOfStream() == false) {
+			if (this.parent.getState() == DownloadItem.STATE_PAUSED) {
+                Thread.sleep(100);
+                continue;
+            }
 			boolean ret = downloadSegments ();
 			if(ret == false) {
 				dispose();
@@ -398,7 +414,7 @@ class DashDownloader extends Thread {
 			if(isEndOfStream()) {
 				return true;
 			}
-			Thread.sleep(1);
+			Thread.sleep(20);
     	}
     	
     	ArrayList<AsyncFileWriter> writers = new ArrayList<AsyncFileWriter>();

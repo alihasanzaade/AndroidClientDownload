@@ -169,21 +169,6 @@ public class DownloadItem implements IDownload {
         saveDownloadInfo();
     }
 
-    private Entitlement readEntitlement(String localBasePath) {
-        try {
-            FileInputStream fileIn = new FileInputStream(localBasePath + "/entitlement.ser");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            Entitlement entitlement = (Entitlement) in.readObject();
-            in.close();
-            fileIn.close();
-            return entitlement;
-        }
-        catch(ClassNotFoundException | IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private void downloadLicense(String mediaId, String manifestUrl, String playToken) {
         Pair<String, String> licenseDetails = DownloadItem.getLicenseDetails(manifestUrl, false);
         if (licenseDetails == null) {
@@ -298,11 +283,17 @@ public class DownloadItem implements IDownload {
     }
 
     public void pause() {
-        // TODO: implement
+        if (getState() == DownloadItem.STATE_DOWNLOADING) {
+            setState(DownloadItem.STATE_PAUSED);
+            this.downloaderWorker.notifyUpdatersPause();
+        }
     }
 
     public void resume() {
-        // TODO: implement
+        if (getState() == DownloadItem.STATE_PAUSED) {
+            setState(DownloadItem.STATE_DOWNLOADING);
+            this.downloaderWorker.notifyUpdatersResume();
+        }
     }
 
     public void retry() {
