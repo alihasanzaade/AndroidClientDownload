@@ -1,9 +1,11 @@
 package net.ericsson.emovs.download;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.ebs.android.utilities.RunnableThread;
@@ -104,6 +106,7 @@ public class EMPDownloadService extends Service {
                 }
                 else if (DownloadItemManager.getInstance().count(DownloadItem.STATE_DOWNLOADING) == 0 &&
                          DownloadItemManager.getInstance().count(DownloadItem.STATE_PAUSED) == 0) {
+                    Log.d(TAG, "Stopping service...");
                     stop();
                     break;
                 }
@@ -117,22 +120,23 @@ public class EMPDownloadService extends Service {
                 break;
             }
         }
+        Log.d(TAG, "Stopping service...");
     }
 
     private void showNotification() {
-//        Notification notification = new NotificationCompat.Builder(this)
-//                .setContentTitle("DownloadItem")
+        Notification notification = new NotificationCompat.Builder(this)
+                .setContentTitle("DownloadItem")
 //                .setTicker(getResources().getString(R.string.app_name))
-//                .setContentText("Downloading...")
+                .setContentText("Downloading...")
 //                .setSmallIcon(R.drawable.my_icon)
 //                .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
 //                .setContentIntent(contentPendingIntent)
 //                .setOngoing(true)
 //                .setDeleteIntent(contentPendingIntent)  // if needed
-//                .build();
+                .build();
 //
 //        // NO_CLEAR makes the notification stay when the user performs a "delete all" command
-//        notification.flags = notification.flags | Notification.FLAG_NO_CLEAR;
-//        startForeground(NOTIFICATION_ID, notification);
+        notification.flags = notification.flags | Notification.FLAG_NO_CLEAR;
+        startForeground(NOTIFICATION_ID, notification);
     }
 }
