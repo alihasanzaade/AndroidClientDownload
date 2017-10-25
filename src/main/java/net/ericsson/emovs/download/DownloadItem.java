@@ -97,6 +97,26 @@ public class DownloadItem implements IDownload {
         download(getId(), null);
     }
 
+    public void delete() {
+        dispose();
+        File f = new File(this.downloadPath, "info.ser");
+        if (f.exists()) {
+            f.delete();
+        }
+    }
+
+    public void dispose() {
+        if (this.downloaderWorker.getState() != Thread.State.NEW) {
+            if (this.downloaderWorker.isAlive()) {
+                this.downloaderWorker.interrupt();
+            }
+        }
+    }
+
+    public String getDownloadPath() {
+        return this.downloadPath;
+    }
+
     // TODO: make this private
     public void download(final String assetId, final IDownloadEventListener callback) {
         final DownloadItem self = this;

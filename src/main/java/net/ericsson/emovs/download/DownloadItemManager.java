@@ -9,10 +9,14 @@ import com.ebs.android.utilities.FileSerializer;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import static android.os.Environment.getExternalStorageDirectory;
 
@@ -30,6 +34,7 @@ public class DownloadItemManager {
 
     private Context app;
     private HashMap<String, DownloadItem> downloadItems;
+    private LinkedList<String> assetsToDelete;
     private int maxConcurrentDownloads;
 
     private static class DownloadItemManagerHolder {
@@ -47,6 +52,7 @@ public class DownloadItemManager {
     protected DownloadItemManager() {
         this.downloadItems = new HashMap<>();
         this.maxConcurrentDownloads = DEFAULT_CONCURRENT_DOWNLOADS;
+        this.assetsToDelete = new LinkedList<>();
     }
 
     public boolean createItem(IPlayable playable) {
@@ -78,6 +84,10 @@ public class DownloadItemManager {
         return count(DownloadItem.STATE_DOWNLOADING) < maxConcurrentDownloads;
     }
 
+    public boolean hasAssetsToDelete() {
+        return this.assetsToDelete.size() > 0;
+    }
+
     public void downloadNext() {
         for (DownloadItem item : this.downloadItems.values()) {
             if (item.getState() == DownloadItem.STATE_QUEUED) {
@@ -103,6 +113,14 @@ public class DownloadItemManager {
         this.downloadItems.get(playable.getId()).pause();
     }
 
+    public void delete(IPlayable playable) {
+        if (this.downloadItems.containsKey(playable.getId()) == false) {
+            return;
+        }
+        this.downloadItems.get(playable.getId()).delete();
+        this.assetsToDelete.add(playable.getId());
+    }
+
     public void resume(IPlayable playable) {
         boolean contains = this.downloadItems.containsKey(playable.getId());
         if(contains == false) {
@@ -118,6 +136,25 @@ public class DownloadItemManager {
         }
         // TODO: should queue and not download immediately
         this.downloadItems.get(playable.getId()).retry();
+    }
+
+    public void flushRemovedAssets() {
+        while(this.assetsToDelete.size() > 0) {
+            String assetId = this.assetsToDelete.pop();
+            boolean contains = this.downloadItems.containsKey(assetId);
+            if(contains == false) {
+                continue;
+            }
+            File dir = new File(this.downloadItems.get(assetId).getDownloadPath());
+            if(dir.exists()) {
+                try {
+                    FileUtils.deleteDirectory(dir);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            this.downloadItems.remove(assetId);
+        }
     }
 
     public void syncWithStorage() {

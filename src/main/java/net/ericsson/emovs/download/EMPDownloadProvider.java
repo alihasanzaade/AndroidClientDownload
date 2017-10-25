@@ -59,7 +59,12 @@ public class EMPDownloadProvider {
     }
 
     public void delete(IPlayable playable) {
-        // TODO: delete asset (downloaded, queued, downloading, failed)
+        DownloadItemManager.getInstance().delete(playable);
+        try {
+            startService();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void pause(IPlayable playable) {

@@ -85,6 +85,14 @@ public class EMPDownloadService extends Service {
                 //if (isRunning == false) {
                 //    break;
                 //}
+                if(DownloadItemManager.getInstance().hasAssetsToDelete()) {
+                    new RunnableThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            DownloadItemManager.getInstance().flushRemovedAssets();
+                        }
+                    }).start();
+                }
                 if (DownloadItemManager.getInstance().count(DownloadItem.STATE_QUEUED) > 0) {
                     if (DownloadItemManager.getInstance().canStartNewDownload()) {
                         Log.d(TAG, "Downloading next asset...");
