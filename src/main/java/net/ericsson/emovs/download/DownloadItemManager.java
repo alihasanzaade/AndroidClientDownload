@@ -62,6 +62,9 @@ public class DownloadItemManager {
     }
 
     private void createItemFromDownloadInfo(DownloadInfo info) {
+        if (this.downloadItems.containsKey(info.onlinePlayable.getId())) {
+           return;
+        }
         DownloadItem item = new DownloadItem(ContextRegistry.get(), info);
         this.downloadItems.put(info.onlinePlayable.getId(), item);
     }

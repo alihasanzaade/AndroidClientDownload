@@ -83,6 +83,9 @@ public class DownloadItem implements IDownload {
         this.downloadPath = info.downloadPath;
         this.offlinePlayable = info.offlinePlayable;
         this.onlinePlayable = info.onlinePlayable;
+        if (this.state == DownloadItem.STATE_DOWNLOADING || this.state == DownloadItem.STATE_PAUSED) {
+            download();
+        }
     }
 
     public DownloadItem(Context app) {
