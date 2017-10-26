@@ -52,7 +52,7 @@ import static android.os.Environment.getExternalStorageDirectory;
  */
 
 public class DownloadItem implements IDownload {
-    private final String TAG = DownloadItem.class.toString();
+    private static final String TAG = DownloadItem.class.toString();
 
     public static final int STATE_QUEUED = 0;
     public static final int STATE_DOWNLOADING = 1;
@@ -122,8 +122,7 @@ public class DownloadItem implements IDownload {
         return this.downloadPath;
     }
 
-    // TODO: make this private
-    public void download(final String assetId, final IDownloadEventListener callback) {
+    private void download(final String assetId, final IDownloadEventListener callback) {
         final DownloadItem self = this;
         final EntitledRunnable onEntitlementRunnable = new EntitledRunnable() {
             @Override
@@ -142,7 +141,7 @@ public class DownloadItem implements IDownload {
 
                 FileSerializer.write(entitlement, self.downloadPath + "/entitlement.ser");
 
-                Log.d("EMP MEDIA LOCATOR", entitlement.mediaLocator);
+                Log.d(TAG, "Locator: " + entitlement.mediaLocator);
 
                 downloadLicense(assetId, entitlement.mediaLocator, entitlement.playToken);
                 downloadMedia(self.downloadPath, entitlement, callback);
@@ -217,7 +216,7 @@ public class DownloadItem implements IDownload {
                 mpd = getManifestDocument(new URL(manifestUrl));
             }
             NodeList laurls = (NodeList) xpath.compile("//urn:microsoft:laurl").evaluate(mpd, XPathConstants.NODESET);
-            Log.d("EMP LICENSE SERVER URL", "Node Count: " + laurls.getLength());
+            Log.d(TAG, "Node Count: " + laurls.getLength());
             String drmLicenseUrl = null;
             String drmInitializationBase64 = null;
             if (laurls.getLength() > 0) {
@@ -225,14 +224,14 @@ public class DownloadItem implements IDownload {
                 NamedNodeMap laurlAttrs = laurl.getAttributes();
                 Node licenseServerUrlNode = laurlAttrs.getNamedItem("licenseUrl");
                 drmLicenseUrl = licenseServerUrlNode.getNodeValue();
-                Log.d("EMP LICENSE SERVER URL", drmLicenseUrl);
+                Log.d(TAG, "License Server URL: " + drmLicenseUrl);
 
                 NodeList psshCandidates = laurl.getParentNode().getChildNodes();
                 for (int j = 0; j < psshCandidates.getLength(); ++j) {
                     Node pssh = psshCandidates.item(j);
                     if (pssh.getNodeName().contains("pssh")) {
                         drmInitializationBase64 = pssh.getTextContent();
-                        Log.d("EMP Initialization Data", drmInitializationBase64);
+                        Log.d(TAG, "EMP Initialization Data: " + drmInitializationBase64);
                         break;
                     }
                 }
@@ -248,7 +247,7 @@ public class DownloadItem implements IDownload {
     private static Document getManifestDocument(File manifestFile) throws Exception {
         String manifestContent = FileUtils.readFileToString(manifestFile, "UTF-8");
 
-        Log.d("EMP LICENSE SERVER URL", manifestContent);
+        Log.d(TAG, manifestContent);
 
         DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
         domFactory.setNamespaceAware(true);
@@ -346,13 +345,11 @@ public class DownloadItem implements IDownload {
         return getId().hashCode();
     }
 
-    // TODO: implement
     @Override
     public EmpOfflineAsset getDownloadedAsset() {
         return this.offlinePlayable;
     }
 
-    // TODO: implement
     public int getState() {
         return state;
     }
@@ -381,7 +378,6 @@ public class DownloadItem implements IDownload {
         return 0;
     }
 
-    // TODO: implement
     @Override
     public void addEventListener(IDownloadEventListener listener) {
         if (this.downloaderWorker == null) {
@@ -395,7 +391,6 @@ public class DownloadItem implements IDownload {
         return this.onlinePlayable;
     }
 
-    // TODO: calculate getDownloadedSize() / getMediaFullSize() instead
     @Override
     public double getProgress() {
         return progress;
