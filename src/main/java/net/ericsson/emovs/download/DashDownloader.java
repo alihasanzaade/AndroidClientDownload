@@ -62,6 +62,9 @@ class DashDownloader extends Thread {
 	ArrayList<AsyncFileWriter> pendingWriters;
 	HashMap<String, IDownloadEventListener> stateUpdaters;
     DownloadItem parent;
+
+	int errorCode;
+	String errorMessage;
     
 	public DashDownloader (DownloadItem parent) {
 		this.chunkMemory = new HashMap<>();
@@ -88,6 +91,9 @@ class DashDownloader extends Thread {
 	}
 
 	public void notifyUpdatersError(int errorCode, String message) {
+		this.errorCode = errorCode;
+		this.errorMessage = message;
+
 		if (this.parent != null) {
 			this.parent.setState(DownloadItem.STATE_FAILED);
 		}
@@ -136,6 +142,8 @@ class DashDownloader extends Thread {
 	@Override
 	public void run() {
 		try {
+			errorCode = 0;
+			errorMessage = null;
             notifyUpdatersStart();
 			download();
 		}
@@ -147,7 +155,15 @@ class DashDownloader extends Thread {
 			notifyUpdatersError(ErrorCodes.DOWNLOAD_RUNTIME_ERROR, e.getMessage());
 		}
 	}
-	
+
+	public int getErrorCode() {
+		return errorCode;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
     public void download() throws Exception {
 		downloadManifest();
 

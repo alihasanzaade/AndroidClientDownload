@@ -354,28 +354,37 @@ public class DownloadItem implements IDownload {
         return state;
     }
 
-    // TODO: implement
     @Override
-    public String getErrorCode() {
-        return null;
+    public int getErrorCode() {
+        if(this.downloaderWorker == null) {
+            return 0;
+        }
+        return this.downloaderWorker.getErrorCode();
     }
 
-    // TODO: implement
     @Override
     public String getErrorMessage() {
-        return null;
+        if(this.downloaderWorker == null) {
+            return null;
+        }
+        return this.downloaderWorker.getErrorMessage();
     }
 
-    // TODO: implement
     @Override
-    public long getMediaFullSize() {
-        return 0;
+    public long getMediaEstimatedSize() {
+        double progress = getProgress() / 100;
+        if(progress < 0.0001) {
+            return -1;
+        }
+        if(progress > 1) {
+            progress = 1;
+        }
+        return (long) (getDownloadedSize() / getProgress());
     }
 
-    // TODO: implement
     @Override
     public long getDownloadedSize() {
-        return 0;
+        return FileUtils.sizeOfDirectory(new File(getDownloadPath()));
     }
 
     @Override

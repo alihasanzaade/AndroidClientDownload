@@ -11,9 +11,9 @@ public interface IDownload {
     EmpOfflineAsset getDownloadedAsset();
     IPlayable getOnlinePlayable();
     int getState();
-    String getErrorCode();
+    int getErrorCode();
     String getErrorMessage();
-    long getMediaFullSize();
+    long getMediaEstimatedSize();
     long getDownloadedSize();
     double getProgress();
     void addEventListener(IDownloadEventListener listener);
