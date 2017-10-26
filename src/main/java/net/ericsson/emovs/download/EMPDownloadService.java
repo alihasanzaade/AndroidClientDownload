@@ -82,16 +82,7 @@ public class EMPDownloadService extends Service {
         DownloadItemManager.getInstance().syncWithStorage();
         for (;;) {
             try {
-                //if (isRunning == false) {
-                //    break;
-                //}
-                if(DownloadItemManager.getInstance().hasAssetsToDelete()) {
-                    //new RunnableThread(new Runnable() {
-                    //    @Override
-                    //    public void run() {
-                    //        DownloadItemManager.getInstance().flushRemovedAssets();
-                    //    }
-                    //}).start();
+                if (DownloadItemManager.getInstance().hasAssetsToDelete()) {
                     DownloadItemManager.getInstance().flushRemovedAssets();
                 }
                 if (DownloadItemManager.getInstance().count(DownloadItem.STATE_QUEUED) > 0) {

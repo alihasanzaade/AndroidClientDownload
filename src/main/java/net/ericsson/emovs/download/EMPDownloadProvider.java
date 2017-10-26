@@ -39,6 +39,14 @@ public class EMPDownloadProvider {
         }
     }
 
+    public void pause(IPlayable playable) {
+        DownloadItemManager.getInstance().pause(playable);
+    }
+
+    public void resume(IPlayable playable) {
+        DownloadItemManager.getInstance().resume(playable);
+    }
+
     public void retry(IPlayable playable) {
         DownloadItemManager.getInstance().retry(playable);
     }
@@ -50,14 +58,6 @@ public class EMPDownloadProvider {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public void pause(IPlayable playable) {
-        DownloadItemManager.getInstance().pause(playable);
-    }
-
-    public void resume(IPlayable playable) {
-        DownloadItemManager.getInstance().resume(playable);
     }
 
     public ArrayList<IDownload> getDownloads() {

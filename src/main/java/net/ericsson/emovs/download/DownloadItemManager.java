@@ -27,9 +27,8 @@ import static android.os.Environment.getExternalStorageDirectory;
 
 public class DownloadItemManager {
     private static final String TAG = DownloadItemManager.class.toString();
-
-    // TODO: download folder should be specific for each app
-    public static String DOWNLOAD_BASE_PATH = getExternalStorageDirectory().getPath() + "/empdownloads/";
+    private static final String DOWNLOAD_FOLDER = "EMPDownloads";
+    public static String DOWNLOAD_BASE_PATH = null;
 
     private final int DEFAULT_CONCURRENT_DOWNLOADS = 2;
 
@@ -46,6 +45,7 @@ public class DownloadItemManager {
     }
 
     protected DownloadItemManager() {
+        DOWNLOAD_BASE_PATH = getExternalStorageDirectory().getPath() + "/" + DOWNLOAD_FOLDER + "/" + ContextRegistry.get().getPackageName() + "/";
         this.downloadItems = new HashMap<>();
         this.maxConcurrentDownloads = DEFAULT_CONCURRENT_DOWNLOADS;
         this.assetsToDelete = new LinkedList<>();
@@ -133,7 +133,6 @@ public class DownloadItemManager {
         if(contains == false) {
             return;
         }
-        // TODO: should queue and not download immediately
         this.downloadItems.get(playable.getId()).retry();
     }
 
@@ -157,7 +156,6 @@ public class DownloadItemManager {
     }
 
     public void syncWithStorage() {
-        //TODO: make this async or create summary that includes all assets
         File rooDir = new File(DOWNLOAD_BASE_PATH);
         File[] assets = rooDir.listFiles(new FileFilter() {
             @Override
@@ -177,7 +175,11 @@ public class DownloadItemManager {
             File downloadInfo = new File (file.getAbsoluteFile(), "info.ser");
 
             if (downloadInfo.exists() == false) {
-                //TODO: consider delete folder
+                try {
+                    FileUtils.deleteDirectory(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 continue;
             }
 
@@ -190,9 +192,5 @@ public class DownloadItemManager {
                 //TODO: consider delete folder
             }
         }
-        // TODO: start potential downloads that were interrupted by service shutdown
     }
-
-    //TODO: implement listener to onDownloadListUpdate
-
 }
