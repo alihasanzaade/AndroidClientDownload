@@ -67,6 +67,7 @@ public class DownloadItem implements IDownload {
     private EmpOfflineAsset offlinePlayable;
     private Entitlement entitlement;
     private String downloadPath;
+    private long downloadedSize;
 
     Context app;
     SharedPropertiesICredentialsStorage credentialsStorage;
@@ -86,6 +87,7 @@ public class DownloadItem implements IDownload {
         if (this.state == DownloadItem.STATE_DOWNLOADING || this.state == DownloadItem.STATE_PAUSED) {
             download();
         }
+        updateDownloadedSize();
     }
 
     public DownloadItem(Context app) {
@@ -107,6 +109,10 @@ public class DownloadItem implements IDownload {
         if (f.exists()) {
             f.delete();
         }
+    }
+
+    public void updateDownloadedSize() {
+        this.downloadedSize = FileUtils.sizeOfDirectory(new File(getDownloadPath()));
     }
 
     public void dispose() {
@@ -281,6 +287,9 @@ public class DownloadItem implements IDownload {
     }
 
     public void setProgress(double progress) {
+        if (progress < this.progress) {
+            return;
+        }
         this.progress = progress;
         saveDownloadInfo();
     }
@@ -379,12 +388,12 @@ public class DownloadItem implements IDownload {
         if(progress > 1) {
             progress = 1;
         }
-        return (long) (getDownloadedSize() / getProgress());
+        return (long) (getDownloadedSize() / progress);
     }
 
     @Override
     public long getDownloadedSize() {
-        return FileUtils.sizeOfDirectory(new File(getDownloadPath()));
+        return this.downloadedSize;
     }
 
     @Override

@@ -119,6 +119,7 @@ class DashDownloader extends Thread {
 		for(IDownloadEventListener callback : this.stateUpdaters.values()) {
 			callback.onProgressUpdate(progress);
 		}
+        this.parent.updateDownloadedSize();
 	}
 
 	private void notifyUpdatersStart() {
