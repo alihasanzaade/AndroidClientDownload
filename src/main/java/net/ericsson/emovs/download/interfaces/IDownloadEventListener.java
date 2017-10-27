@@ -14,4 +14,5 @@ public interface IDownloadEventListener {
     void onEntitlement(Entitlement entitlement);
     void onError(int errorCode, String errorMessage);
     void onSuccess();
+    void onStop();
 }

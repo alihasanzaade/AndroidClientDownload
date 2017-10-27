@@ -2,6 +2,7 @@ package net.ericsson.emovs.download;
 
 import android.util.Log;
 
+import com.ebs.android.exposure.entitlements.Entitlement;
 import com.ebs.android.utilities.ErrorCodes;
 
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
@@ -122,23 +123,35 @@ class DashDownloader extends Thread {
         this.parent.updateDownloadedSize();
 	}
 
+	private void notifyUpdatersStop() {
+		for (IDownloadEventListener callback : this.stateUpdaters.values()) {
+			callback.onStop();
+		}
+	}
+
 	private void notifyUpdatersStart() {
-		for(IDownloadEventListener callback : this.stateUpdaters.values()) {
+		for (IDownloadEventListener callback : this.stateUpdaters.values()) {
 			callback.onStart();
 		}
 	}
 
     public void notifyUpdatersPause() {
-        for(IDownloadEventListener callback : this.stateUpdaters.values()) {
+        for (IDownloadEventListener callback : this.stateUpdaters.values()) {
             callback.onPause();
         }
     }
 
     public void notifyUpdatersResume() {
-        for(IDownloadEventListener callback : this.stateUpdaters.values()) {
+        for (IDownloadEventListener callback : this.stateUpdaters.values()) {
             callback.onResume();
         }
     }
+
+	public void notifyEntitlement(Entitlement entitlement) {
+		for (IDownloadEventListener callback : this.stateUpdaters.values()) {
+			callback.onEntitlement(entitlement);
+		}
+	}
 
 	@Override
 	public void run() {
@@ -149,10 +162,12 @@ class DashDownloader extends Thread {
 			download();
 		}
         catch(InterruptedException e) {
+			notifyUpdatersStop();
             e.printStackTrace();
         }
 		catch(Exception e) {
 			e.printStackTrace();
+			notifyUpdatersStop();
 			notifyUpdatersError(ErrorCodes.DOWNLOAD_RUNTIME_ERROR, e.getMessage());
 		}
 	}

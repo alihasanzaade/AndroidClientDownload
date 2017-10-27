@@ -17,7 +17,11 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            resValue "string", "empdownloader_version", project.ext.releaseVersion
+        }
         release {
+            resValue "string", "empdownloader_version", project.ext.releaseVersion
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -46,9 +50,11 @@ dependencies {
     compile 'com.google.android.exoplayer:exoplayer:r2.5.0'
     if (project.hasProperty('hasParentProject')) {
         compile project(':libraries:exposure')
+        compile project(':libraries:analytics')
     }
     else {
         compile 'com.github.EricssonBroadcastServices:AndroidClientExposure:master-SNAPSHOT'
+        compile 'com.github.EricssonBroadcastServices:AndroidClientAnalytics:master-SNAPSHOT'
     }
     testCompile 'junit:junit:4.12'
 }

@@ -88,6 +88,7 @@ public class DownloadItem implements IDownload {
             download();
         }
         updateDownloadedSize();
+        setAnalytics();
     }
 
     public DownloadItem(Context app) {
@@ -95,7 +96,12 @@ public class DownloadItem implements IDownload {
         this.uuid = UUID.randomUUID();
         this.credentialsStorage = SharedPropertiesICredentialsStorage.getInstance();
         this.downloaderWorker = new DashDownloader(this);
+        setAnalytics();
         setState(STATE_QUEUED);
+    }
+
+    private void setAnalytics() {
+        this.downloaderWorker.setCallback("ANALYTICS", new EMPAnalyticsConnector(this));
     }
 
     public void download() {
@@ -134,6 +140,8 @@ public class DownloadItem implements IDownload {
             @Override
             public void run() {
                 self.entitlement = entitlement;
+
+                self.downloaderWorker.notifyEntitlement(entitlement);
 
                 if (callback != null) {
                     callback.onEntitlement(entitlement);
@@ -412,5 +420,9 @@ public class DownloadItem implements IDownload {
     @Override
     public double getProgress() {
         return progress;
+    }
+
+    public String getVersion() {
+        return ContextRegistry.get().getString(R.string.empdownloader_version);
     }
 }
