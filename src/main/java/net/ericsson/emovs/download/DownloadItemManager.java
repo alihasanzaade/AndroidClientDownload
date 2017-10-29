@@ -2,6 +2,7 @@ package net.ericsson.emovs.download;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Log;
 
 import com.ebs.android.exposure.entitlements.Entitlement;
 import com.ebs.android.exposure.interfaces.IPlayable;
@@ -29,6 +30,7 @@ public class DownloadItemManager {
     private static final String TAG = DownloadItemManager.class.toString();
     private static final String DOWNLOAD_FOLDER = "EMPDownloads";
     public static String DOWNLOAD_BASE_PATH = null;
+    static HashMap<String, DownloadInfo> summary = new HashMap<>();
 
     private final int DEFAULT_CONCURRENT_DOWNLOADS = 2;
 
@@ -55,8 +57,7 @@ public class DownloadItemManager {
         if (this.downloadItems.containsKey(playable.getId())) {
             return false;
         }
-        DownloadItem item = new DownloadItem(ContextRegistry.get());
-        item.setOnlinePlayable(playable);
+        DownloadItem item = new DownloadItem(ContextRegistry.get(), playable);
         this.downloadItems.put(playable.getId(), item);
         return true;
     }
@@ -126,6 +127,7 @@ public class DownloadItemManager {
         }
         this.downloadItems.get(playable.getId()).delete();
         this.assetsToDelete.add(playable.getId());
+        updateSummary(playable.getId(), null);
     }
 
     public void retry(IPlayable playable) {
@@ -155,7 +157,52 @@ public class DownloadItemManager {
         }
     }
 
+    public synchronized static void updateSummary(String assetId, DownloadInfo info) {
+        long currentMillis = System.currentTimeMillis();
+
+        File rootDir = new File(DOWNLOAD_BASE_PATH);
+        File summaryFile = new File(rootDir, "summary.ser");
+        if (info == null) {
+            summary.remove(assetId);
+        }
+        else {
+            summary.put(assetId, info);
+        }
+        FileSerializer.write(summary, summaryFile.getAbsolutePath());
+        long elapsedTime = System.currentTimeMillis() - currentMillis;
+
+        Log.d(TAG, "Summary serialization duration: " + elapsedTime + "ms");
+    }
+
     public void syncWithStorage() {
+        long currentMillis = System.currentTimeMillis();
+        File rootDir = new File(DOWNLOAD_BASE_PATH);
+        File summaryFile = new File(rootDir, "summary.ser");
+        if (summaryFile.exists()) {
+            summary = FileSerializer.read(summaryFile.getAbsolutePath());
+            if(summary != null) {
+                for(DownloadInfo info : summary.values()) {
+                    if(info == null) {
+                        continue;
+                    }
+                    this.createItemFromDownloadInfo(info);
+                }
+            }
+            else {
+                summaryFile.delete();
+                syncWithStorageSlow();
+            }
+        }
+        else {
+            summary = new HashMap<>();
+        }
+        long elapsedTime = System.currentTimeMillis() - currentMillis;
+        Log.d(TAG, "Sync duration: " + elapsedTime + "ms, items: " + (summary == null ? 0 : summary.size()));
+    }
+
+    private void syncWithStorageSlow() {
+        long currentMillis = System.currentTimeMillis();
+        summary = new HashMap<>();
         File rooDir = new File(DOWNLOAD_BASE_PATH);
         File[] assets = rooDir.listFiles(new FileFilter() {
             @Override
@@ -186,11 +233,19 @@ public class DownloadItemManager {
             DownloadInfo info = FileSerializer.read(downloadInfo.getAbsolutePath());
 
             if (info != null) {
+                summary.put(info.onlinePlayable.getId(), info);
                 this.createItemFromDownloadInfo(info);
             }
             else {
                 //TODO: consider delete folder
             }
         }
+
+        File rootDir = new File(DOWNLOAD_BASE_PATH);
+        File summaryFile = new File(rootDir, "summary.ser");
+        FileSerializer.write(summary, summaryFile.getAbsolutePath());
+
+        long elapsedTime = System.currentTimeMillis() - currentMillis;
+        Log.d(TAG, "Sync duration: " + elapsedTime + "ms, items: " + assets.length);
     }
 }

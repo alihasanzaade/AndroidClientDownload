@@ -85,17 +85,19 @@ public class DownloadItem implements IDownload {
         this.offlinePlayable = info.offlinePlayable;
         this.onlinePlayable = info.onlinePlayable;
         if (this.state == DownloadItem.STATE_DOWNLOADING || this.state == DownloadItem.STATE_PAUSED) {
-            download();
+            download(getId(), null);
         }
         updateDownloadedSize();
         setAnalytics();
     }
 
-    public DownloadItem(Context app) {
+    public DownloadItem(Context app, IPlayable onlinePlayable) {
         this.app = app;
         this.uuid = UUID.randomUUID();
         this.credentialsStorage = SharedPropertiesICredentialsStorage.getInstance();
         this.downloaderWorker = new DashDownloader(this);
+        this.onlinePlayable = onlinePlayable;
+        this.downloadPath = DownloadItemManager.DOWNLOAD_BASE_PATH + onlinePlayable.getId();
         setAnalytics();
         setState(STATE_QUEUED);
     }
@@ -147,8 +149,6 @@ public class DownloadItem implements IDownload {
                     callback.onEntitlement(entitlement);
                 }
 
-                self.downloadPath = DownloadItemManager.DOWNLOAD_BASE_PATH + assetId;// + "/" + UUID.randomUUID().toString().substring(0, 5).replaceAll("-", "");
-
                 if (new File(downloadPath).exists() == false) {
                     new File(self.downloadPath).mkdirs();
                 }
@@ -174,14 +174,12 @@ public class DownloadItem implements IDownload {
     }
 
     public void onDownloadSuccess(String manifestPath) {
-        if (this.offlinePlayable != null) {
+        if (this.offlinePlayable == null) {
             this.offlinePlayable = new EmpOfflineAsset();
         }
-
         this.offlinePlayable.entitlement = this.entitlement;
         this.offlinePlayable.localMediaPath = manifestPath;
         setState(STATE_COMPLETED);
-
         FileSerializer.write(this.offlinePlayable, this.downloadPath + "/offline_asset.ser");
         saveDownloadInfo();
     }
@@ -281,6 +279,7 @@ public class DownloadItem implements IDownload {
     }
 
     public void setState(int state) {
+        Log.d(TAG, "New download state: " + Integer.toString(state));
         this.state = state;
         saveDownloadInfo();
     }
@@ -299,7 +298,7 @@ public class DownloadItem implements IDownload {
             return;
         }
         this.progress = progress;
-        saveDownloadInfo();
+        //saveDownloadInfo();
     }
 
     public void pause() {
@@ -329,6 +328,7 @@ public class DownloadItem implements IDownload {
         info.state = this.state;
         info.uuid = this.uuid;
         FileSerializer.write(info, new File(this.downloadPath, "info.ser").getAbsolutePath());
+        DownloadItemManager.updateSummary(info.onlinePlayable.getId(), info);
     }
 
     public String getId() {

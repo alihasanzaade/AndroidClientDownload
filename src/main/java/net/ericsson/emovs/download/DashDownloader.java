@@ -480,7 +480,7 @@ class DashDownloader extends Thread {
 			if(isEndOfStream()) {
 				return true;
 			}
-			Thread.sleep(20);
+			Thread.sleep(5);
     	}
     	
     	ArrayList<AsyncFileWriter> writers = new ArrayList<AsyncFileWriter>();

@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.ebs.android.exposure.auth.EMPAuthProviderWithStorage;
+import com.ebs.android.exposure.clients.exposure.ExposureClient;
 import com.ebs.android.utilities.RunnableThread;
 
 
@@ -78,7 +80,18 @@ public class EMPDownloadService extends Service {
         //isRunning = false;
     }
 
+    private void waitUntilLogin() {
+        while (ExposureClient.getInstance().getSessionToken() == null) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void run() {
+        waitUntilLogin();
         DownloadItemManager.getInstance().syncWithStorage();
         for (;;) {
             try {

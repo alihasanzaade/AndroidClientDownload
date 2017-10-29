@@ -138,6 +138,6 @@ public class EMPAnalyticsConnector implements IDownloadEventListener {
 
     @Override
     public void onProgressUpdate(double progress) {
-
+        EMPAnalyticsProvider.getInstance().refresh();
     }
 }
