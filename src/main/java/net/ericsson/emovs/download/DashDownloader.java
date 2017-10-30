@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.ebs.android.exposure.entitlements.Entitlement;
 import com.ebs.android.utilities.ErrorCodes;
+import com.ebs.android.utilities.RunnableThread;
 
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
 
@@ -64,6 +65,8 @@ class DashDownloader extends Thread {
 	HashMap<String, IDownloadEventListener> stateUpdaters;
     DownloadItem parent;
 
+	RunnableThread sizeEstimator;
+
 	int errorCode;
 	String errorMessage;
     
@@ -120,7 +123,15 @@ class DashDownloader extends Thread {
 		for(IDownloadEventListener callback : this.stateUpdaters.values()) {
 			callback.onProgressUpdate(progress);
 		}
-        this.parent.updateDownloadedSize();
+		if(this.sizeEstimator == null || this.sizeEstimator.isAlive() == false) {
+			this.sizeEstimator = new RunnableThread(new Runnable() {
+				@Override
+				public void run() {
+					parent.updateDownloadedSize();
+				}
+			});
+			this.sizeEstimator.start();
+		}
 	}
 
 	private void notifyUpdatersStop() {
@@ -217,9 +228,12 @@ class DashDownloader extends Thread {
     }
     
     public void dispose() {
-    	for(AsyncFileWriter writer : pendingWriters) {
+    	for (AsyncFileWriter writer : pendingWriters) {
     		writer.interrupt();
     	}
+		if (this.sizeEstimator != null && this.sizeEstimator.isAlive() == false) {
+			this.sizeEstimator.interrupt();
+		}
     }
     
     public synchronized void addWriter(AsyncFileWriter writer) {
@@ -499,8 +513,15 @@ class DashDownloader extends Thread {
                 int chunkIndex = getIndex(indexId);
                 final String chunkIndexStr = Integer.toString(chunkIndex);
 
+				conf.segmentCurrent[i] = chunkIndex;
+
 				if(conf.segmentCount[i] > 0) {
-					notifyUpdatersProgress(Math.round((chunkIndex-1) * 100.0 / conf.segmentCount[i]));
+					double totalChunks = 0, totalCurrent = 0;
+					for (int k = 0; k < conf.segmentCount.length; ++k) {
+						totalChunks +=  conf.segmentCount[k];
+						totalCurrent +=  conf.segmentCurrent[k] - 1;
+					}
+					notifyUpdatersProgress(Math.round(totalCurrent * 100.0 / totalChunks));
 				}
 				else {
 					//notifyUpdatersProgress(0.0);
@@ -680,6 +701,7 @@ class DashDownloader extends Thread {
         
         int[] segmentDurations = new int[MAX_ADAPTATION_SETS];
         int[] segmentCount = new int[MAX_ADAPTATION_SETS];
+		int[] segmentCurrent = new int[MAX_ADAPTATION_SETS];
         boolean[] eos = new boolean[MAX_ADAPTATION_SETS];
         
         Reps[] representationIds = new Reps[MAX_ADAPTATION_SETS];

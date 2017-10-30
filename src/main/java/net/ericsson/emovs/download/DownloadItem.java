@@ -86,17 +86,19 @@ public class DownloadItem implements IDownload {
         this.offlinePlayable = info.offlinePlayable;
         this.onlinePlayable = info.onlinePlayable;
         this.downloadedSize = info.downloadedBytes;
-        new RunnableThread(new Runnable() {
-            @Override
-            public void run() {
-                if (state == DownloadItem.STATE_DOWNLOADING || state == DownloadItem.STATE_PAUSED) {
-                    download(getId(), null);
+        if (state == DownloadItem.STATE_DOWNLOADING || state == DownloadItem.STATE_PAUSED || downloadedSize == 0) {
+            new RunnableThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (state == DownloadItem.STATE_DOWNLOADING || state == DownloadItem.STATE_PAUSED) {
+                        download(getId(), null);
+                    }
+                    if (downloadedSize == 0) {
+                        updateDownloadedSize();
+                    }
                 }
-                if (downloadedSize == 0) {
-                    updateDownloadedSize();
-                }
-            }
-        }).start();
+            }).start();
+        }
         setAnalytics();
     }
 
