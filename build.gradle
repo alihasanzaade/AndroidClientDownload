@@ -4,6 +4,7 @@ ext {
     releaseArtifact = 'empplayer-download'
     releaseVersion = 'v2.0.0'
     releaseDescription = 'The EMP Player library download module.'
+    libraryTag = 'master-SNAPSHOT'
 }
 
 android {
@@ -53,8 +54,8 @@ dependencies {
         compile project(':libraries:analytics')
     }
     else {
-        compile 'com.github.EricssonBroadcastServices:AndroidClientExposure:master-SNAPSHOT'
-        compile 'com.github.EricssonBroadcastServices:AndroidClientAnalytics:master-SNAPSHOT'
+        compile "com.github.EricssonBroadcastServices:AndroidClientExposure:${project.ext.libraryTag}"
+        compile "com.github.EricssonBroadcastServices:AndroidClientAnalytics:${project.ext.libraryTag}"
     }
     testCompile 'junit:junit:4.12'
 }
