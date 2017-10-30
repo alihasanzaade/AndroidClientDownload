@@ -18,6 +18,7 @@ import com.ebs.android.exposure.models.EmpOfflineAsset;
 import com.ebs.android.utilities.ErrorCodes;
 import com.ebs.android.utilities.ErrorRunnable;
 import com.ebs.android.utilities.FileSerializer;
+import com.ebs.android.utilities.RunnableThread;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
@@ -84,10 +85,18 @@ public class DownloadItem implements IDownload {
         this.downloadPath = info.downloadPath;
         this.offlinePlayable = info.offlinePlayable;
         this.onlinePlayable = info.onlinePlayable;
-        if (this.state == DownloadItem.STATE_DOWNLOADING || this.state == DownloadItem.STATE_PAUSED) {
-            download(getId(), null);
-        }
-        updateDownloadedSize();
+        this.downloadedSize = info.downloadedBytes;
+        new RunnableThread(new Runnable() {
+            @Override
+            public void run() {
+                if (state == DownloadItem.STATE_DOWNLOADING || state == DownloadItem.STATE_PAUSED) {
+                    download(getId(), null);
+                }
+                if (downloadedSize == 0) {
+                    updateDownloadedSize();
+                }
+            }
+        }).start();
         setAnalytics();
     }
 
@@ -120,7 +129,13 @@ public class DownloadItem implements IDownload {
     }
 
     public void updateDownloadedSize() {
-        this.downloadedSize = FileUtils.sizeOfDirectory(new File(getDownloadPath()));
+        File path = new File(getDownloadPath());
+        if(path.exists()) {
+            this.downloadedSize = FileUtils.sizeOfDirectory(new File(getDownloadPath()));
+        }
+        else {
+            this.downloadedSize = 0;
+        }
     }
 
     public void dispose() {
@@ -177,10 +192,11 @@ public class DownloadItem implements IDownload {
         if (this.offlinePlayable == null) {
             this.offlinePlayable = new EmpOfflineAsset();
         }
-        this.offlinePlayable.entitlement = this.entitlement;
+//        this.offlinePlayable.entitlement = this.entitlement;
         this.offlinePlayable.localMediaPath = manifestPath;
+        this.offlinePlayable.setJson(this.onlinePlayable.getJson());
         setState(STATE_COMPLETED);
-        FileSerializer.write(this.offlinePlayable, this.downloadPath + "/offline_asset.ser");
+//        FileSerializer.write(this.offlinePlayable, this.downloadPath + "/offline_asset.ser");
         saveDownloadInfo();
     }
 
@@ -327,6 +343,7 @@ public class DownloadItem implements IDownload {
         info.progress = this.progress;
         info.state = this.state;
         info.uuid = this.uuid;
+        info.downloadedBytes = this.downloadedSize;
         FileSerializer.write(info, new File(this.downloadPath, "info.ser").getAbsolutePath());
         DownloadItemManager.updateSummary(info.onlinePlayable.getId(), info);
     }

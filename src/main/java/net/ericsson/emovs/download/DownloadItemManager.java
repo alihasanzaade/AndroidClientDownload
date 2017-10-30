@@ -6,12 +6,18 @@ import android.util.Log;
 
 import com.ebs.android.exposure.entitlements.Entitlement;
 import com.ebs.android.exposure.interfaces.IPlayable;
+import com.ebs.android.exposure.metadata.builders.EmpBaseBuilder;
+import com.ebs.android.exposure.models.EmpAsset;
+import com.ebs.android.exposure.models.EmpOfflineAsset;
 import com.ebs.android.utilities.FileSerializer;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 import net.ericsson.emovs.utilities.ContextRegistry;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -19,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.UUID;
 
 import static android.os.Environment.getExternalStorageDirectory;
 
@@ -157,6 +164,34 @@ public class DownloadItemManager {
         }
     }
 
+    public static void saveJsonSummary() {
+        JSONArray summaryJson = new JSONArray();
+        for (DownloadInfo info : summary.values()) {
+            JSONObject infoJson = new JSONObject();
+            try {
+                infoJson.put("state", info.state);
+                infoJson.put("path", info.downloadPath);
+                infoJson.put("progress", info.progress);
+                infoJson.put("downloadedBytes", info.downloadedBytes);
+                infoJson.put("uuid", info.uuid.toString());
+                infoJson.put("online", info.onlinePlayable.getJson());
+                infoJson.put("offline", info.offlinePlayable == null ? null : info.offlinePlayable.getJson());
+                summaryJson.put(infoJson);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        File rootDir = new File(DOWNLOAD_BASE_PATH);
+        File summaryJsonFile = new File(rootDir, "summary.json");
+        try {
+            FileUtils.writeStringToFile(summaryJsonFile, summaryJson.toString(), "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public synchronized static void updateSummary(String assetId, DownloadInfo info) {
         long currentMillis = System.currentTimeMillis();
 
@@ -168,13 +203,61 @@ public class DownloadItemManager {
         else {
             summary.put(assetId, info);
         }
-        FileSerializer.write(summary, summaryFile.getAbsolutePath());
+        //FileSerializer.write(summary, summaryFile.getAbsolutePath());
+        saveJsonSummary();
         long elapsedTime = System.currentTimeMillis() - currentMillis;
 
         Log.d(TAG, "Summary serialization duration: " + elapsedTime + "ms");
     }
 
     public void syncWithStorage() {
+        long currentMillis = System.currentTimeMillis();
+        File rootDir = new File(DOWNLOAD_BASE_PATH);
+        File summaryFile = new File(rootDir, "summary.json");
+        if (summaryFile.exists()) {
+            try {
+                String summaryContent = FileUtils.readFileToString(summaryFile, "UTF-8");
+                JSONArray summaryJson = new JSONArray(summaryContent);
+                EmpBaseBuilder assetBuilder = new EmpBaseBuilder(null);
+                summary = new HashMap<>();
+                for (int i = 0; i < summaryJson.length(); ++i) {
+                    JSONObject infoJson = summaryJson.getJSONObject(i);
+                    DownloadInfo info = new DownloadInfo();
+                    info.state = infoJson.optInt("state", DownloadItem.STATE_FAILED);
+                    info.downloadPath = infoJson.optString("path", "");
+                    info.progress = infoJson.optDouble("progress", 0.0);
+                    info.downloadedBytes = infoJson.optLong("downloadedBytes", 0);
+                    info.uuid = UUID.fromString(infoJson.optString("uuid", UUID.randomUUID().toString()));
+
+                    EmpAsset onlineAsset = new EmpAsset();
+                    onlineAsset = assetBuilder.getAsset(infoJson.optJSONObject("online"), onlineAsset, false);
+                    info.onlinePlayable = onlineAsset;
+
+                    JSONObject offlineJson = infoJson.optJSONObject("offline");
+                    if (offlineJson != null && offlineJson.has("localSrc")) {
+                        EmpOfflineAsset offlineAsset = new EmpOfflineAsset();
+                        offlineAsset.setProps(onlineAsset);
+                        offlineAsset.localMediaPath = offlineJson.optString("localSrc");
+                        info.offlinePlayable = offlineAsset;
+                    }
+                    summary.put(info.onlinePlayable.getId(), info);
+                    this.createItemFromDownloadInfo(info);
+                }
+            } catch (Exception e) {
+                summaryFile.delete();
+                syncWithStorageSlow();
+                saveJsonSummary();
+                e.printStackTrace();
+            }
+        }
+        else {
+            summary = new HashMap<>();
+        }
+        long elapsedTime = System.currentTimeMillis() - currentMillis;
+        Log.d(TAG, "Sync duration: " + elapsedTime + "ms, items: " + (summary == null ? 0 : summary.size()));
+    }
+
+    public void syncWithStorageSerialized() {
         long currentMillis = System.currentTimeMillis();
         File rootDir = new File(DOWNLOAD_BASE_PATH);
         File summaryFile = new File(rootDir, "summary.ser");

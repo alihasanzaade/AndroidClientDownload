@@ -13,6 +13,7 @@ import java.util.UUID;
 public class DownloadInfo implements Serializable {
     int state;
     double progress;
+    long downloadedBytes;
     String downloadPath;
     UUID uuid;
     IPlayable onlinePlayable;
