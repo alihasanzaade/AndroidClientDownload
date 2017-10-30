@@ -231,7 +231,7 @@ class DashDownloader extends Thread {
     	for (AsyncFileWriter writer : pendingWriters) {
     		writer.interrupt();
     	}
-		if (this.sizeEstimator != null && this.sizeEstimator.isAlive() == false) {
+		if (this.sizeEstimator != null && this.sizeEstimator.isAlive() == true) {
 			this.sizeEstimator.interrupt();
 		}
     }
@@ -242,7 +242,7 @@ class DashDownloader extends Thread {
     
     public synchronized void pushWriter(AsyncFileWriter writer) {
     	pendingWriters.add(0, writer);
-    }   
+    }
     
     public boolean isEmptyWriterPool() {
     	if(pendingWriters.size() == 0) {
