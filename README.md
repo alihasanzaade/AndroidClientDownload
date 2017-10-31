@@ -1,5 +1,16 @@
 # AndroidClientDownload   [![Release](https://jitpack.io/v/EricssonBroadcastServices/AndroidClientDownload.svg)](https://jitpack.io/#EricssonBroadcastServices/AndroidClientDownload)
-Library for android 2.0 media download
+
+* [Features](#features)
+* [License](https://github.com/EricssonBroadcastServices/AndroidClientDownload/blob/master/LICENSE)
+* [Requirements](#requirements)
+* [Installation](#installation)
+* [Documentation](https://jitpack.io/com/github/EricssonBroadcastServices/AndroidClientDownload/master-SNAPSHOT/javadoc/)
+* [Release Notes](#release-notes)
+* [Upgrade Guides](#upgrade-guides)
+
+## Features
+
+
 
 ## Requirements
 
@@ -8,7 +19,7 @@ Library for android 2.0 media download
 ## Installation
 
 ### JitPack
-Releases are available on [JitPack](https://jitpack.io/#EricssonBroadcastServices/AndroidClientDownload) and can be automatically imported to your project using Gradle dependency management.
+Releases are available on [JitPack](https://jitpack.io/#EricssonBroadcastServices/AndroidClientDownload) and can be automatically imported to your project using Gradle.
 
 Add the jitpack.io repository to your project **build.gradle**:
 ```gradle
@@ -23,15 +34,15 @@ allprojects {
 Then add the dependency to your module **build.gradle**:
 ```gradle
 dependencies {
-    compile 'com.github.EricssonBroadcastServices:download:{version}'
+    compile 'com.github.EricssonBroadcastServices:AndroidClientDownload:{version}'
 }
 ```
 
 Note: do not add the jitpack.io repository under *buildscript {}*
 
 ## Release Notes
-Release specific changes can be found in the [CHANGELOG](https://github.com/EricssonBroadcastServices/AndroidClientDownload/blob/master/CHANGELOG.md).
+Release specific changes can be found in the [CHANGELOG](CHANGELOG.md).
 
 ## Upgrade Guides
-Major changes between releases will be documented with special [Upgrade Guides](https://github.com/EricssonBroadcastServices/AndroidClientDownload/blob/master/UPGRADE_GUIDE.md).
+Major changes between releases will be documented with special [Upgrade Guides](UPGRADE_GUIDE.md).
 
