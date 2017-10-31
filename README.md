@@ -1,4 +1,4 @@
-# AndroidClientDownload
+# AndroidClientDownload   [![Release](https://jitpack.io/v/EricssonBroadcastServices/AndroidClientDownload.svg)](https://jitpack.io/#EricssonBroadcastServices/AndroidClientDownload)
 Library for android 2.0 media download
 
 ## Requirements
