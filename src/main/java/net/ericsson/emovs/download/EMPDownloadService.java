@@ -1,16 +1,21 @@
 package net.ericsson.emovs.download;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.ebs.android.exposure.auth.EMPAuthProviderWithStorage;
 import com.ebs.android.exposure.clients.exposure.ExposureClient;
 import com.ebs.android.utilities.RunnableThread;
+
+import net.ericsson.emovs.utilities.ContextRegistry;
 
 
 /**
@@ -81,7 +86,9 @@ public class EMPDownloadService extends Service {
     }
 
     private void waitUntilLogin() {
-        while (ExposureClient.getInstance().getSessionToken() == null) {
+        while (ExposureClient.getInstance().getSessionToken() == null||
+                ContextCompat.checkSelfPermission(ContextRegistry.get(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
