@@ -104,6 +104,16 @@ public class DownloadItemManager {
         }
     }
 
+    public ArrayList<IDownload> getDownloads(int stateFilter) {
+        ArrayList<IDownload> returnDownloads = new ArrayList<>();
+        for (DownloadItem item : this.downloadItems.values()) {
+            if (item.getState() == stateFilter) {
+                returnDownloads.add(item);
+            }
+        }
+        return returnDownloads;
+    }
+
     public ArrayList<IDownload> getDownloads() {
         ArrayList<IDownload> returnDownloads = new ArrayList<>();
         for (DownloadItem item : this.downloadItems.values()) {

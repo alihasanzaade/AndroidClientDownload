@@ -64,6 +64,10 @@ public class EMPDownloadProvider {
         return DownloadItemManager.getInstance().getDownloads();
     }
 
+    public ArrayList<IDownload> getDownloads(int stateFilter) {
+        return DownloadItemManager.getInstance().getDownloads(stateFilter);
+    }
+
     public void startService() throws Exception {
         if (ContextRegistry.get() == null) {
             throw  new Exception("APP_NOT_BOUND_TO_DOWNLOADER_PROVIDER");
