@@ -1,11 +1,9 @@
 package net.ericsson.emovs.download;
 
-import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 
-import com.ebs.android.exposure.interfaces.IPlayable;
-import com.ebs.android.utilities.ServiceUtils;
+import net.ericsson.emovs.exposure.interfaces.IPlayable;
+import net.ericsson.emovs.utilities.ServiceUtils;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 import net.ericsson.emovs.utilities.ContextRegistry;

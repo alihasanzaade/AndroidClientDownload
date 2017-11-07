@@ -11,9 +11,8 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
-import com.ebs.android.exposure.auth.EMPAuthProviderWithStorage;
-import com.ebs.android.exposure.clients.exposure.ExposureClient;
-import com.ebs.android.utilities.RunnableThread;
+import net.ericsson.emovs.exposure.clients.exposure.ExposureClient;
+import net.ericsson.emovs.utilities.RunnableThread;
 
 import net.ericsson.emovs.utilities.ContextRegistry;
 

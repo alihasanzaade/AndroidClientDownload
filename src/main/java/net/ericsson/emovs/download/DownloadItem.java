@@ -1,24 +1,22 @@
 package net.ericsson.emovs.download;
 
-import android.app.DownloadManager;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
 
-import com.ebs.android.exposure.auth.SharedPropertiesICredentialsStorage;
-
-import com.ebs.android.exposure.entitlements.EMPEntitlementProvider;
-import com.ebs.android.exposure.entitlements.EntitledRunnable;
-import com.ebs.android.exposure.entitlements.Entitlement;
-import com.ebs.android.exposure.entitlements.EntitlementCallback;
-import com.ebs.android.exposure.interfaces.IPlayable;
-import com.ebs.android.exposure.models.EmpAsset;
-import com.ebs.android.exposure.models.EmpOfflineAsset;
-import com.ebs.android.utilities.ErrorCodes;
-import com.ebs.android.utilities.ErrorRunnable;
-import com.ebs.android.utilities.FileSerializer;
-import com.ebs.android.utilities.RunnableThread;
+import net.ericsson.emovs.exposure.auth.SharedPropertiesICredentialsStorage;
+import net.ericsson.emovs.exposure.entitlements.EMPEntitlementProvider;
+import net.ericsson.emovs.exposure.entitlements.EntitledRunnable;
+import net.ericsson.emovs.exposure.entitlements.Entitlement;
+import net.ericsson.emovs.exposure.entitlements.EntitlementCallback;
+import net.ericsson.emovs.exposure.interfaces.IPlayable;
+import net.ericsson.emovs.exposure.models.EmpAsset;
+import net.ericsson.emovs.exposure.models.EmpOfflineAsset;
+import net.ericsson.emovs.utilities.ErrorCodes;
+import net.ericsson.emovs.utilities.ErrorRunnable;
+import net.ericsson.emovs.utilities.FileSerializer;
+import net.ericsson.emovs.utilities.RunnableThread;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
@@ -32,11 +30,6 @@ import org.w3c.dom.NodeList;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.UUID;
 
@@ -45,8 +38,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-
-import static android.os.Environment.getExternalStorageDirectory;
 
 /**
  * Created by Joao Coelho on 2017-09-06.
@@ -63,7 +54,6 @@ public class DownloadItem implements IDownload {
         COMPLETED,
         FAILED,
     };
-
 
     private UUID uuid;
     private State state;

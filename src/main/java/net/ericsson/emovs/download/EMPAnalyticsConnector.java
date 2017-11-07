@@ -1,14 +1,10 @@
 package net.ericsson.emovs.download;
 
-import com.ebs.android.exposure.entitlements.Entitlement;
-import com.ebs.android.utilities.RunnableThread;
-
 import net.ericsson.emovs.analytics.EMPAnalyticsProvider;
 import net.ericsson.emovs.analytics.EventParameters;
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
+import net.ericsson.emovs.exposure.entitlements.Entitlement;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 
 /**

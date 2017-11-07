@@ -1,6 +1,7 @@
 package net.ericsson.emovs.download.interfaces;
 
-import com.ebs.android.exposure.entitlements.Entitlement;
+
+import net.ericsson.emovs.exposure.entitlements.Entitlement;
 
 /**
  * Created by Joao Coelho on 2017-09-27.

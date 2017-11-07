@@ -1,15 +1,12 @@
 package net.ericsson.emovs.download;
 
-import android.app.Application;
-import android.content.Context;
 import android.util.Log;
 
-import com.ebs.android.exposure.entitlements.Entitlement;
-import com.ebs.android.exposure.interfaces.IPlayable;
-import com.ebs.android.exposure.metadata.builders.EmpBaseBuilder;
-import com.ebs.android.exposure.models.EmpAsset;
-import com.ebs.android.exposure.models.EmpOfflineAsset;
-import com.ebs.android.utilities.FileSerializer;
+import net.ericsson.emovs.exposure.interfaces.IPlayable;
+import net.ericsson.emovs.exposure.metadata.builders.EmpBaseBuilder;
+import net.ericsson.emovs.exposure.models.EmpAsset;
+import net.ericsson.emovs.exposure.models.EmpOfflineAsset;
+import net.ericsson.emovs.utilities.FileSerializer;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 import net.ericsson.emovs.utilities.ContextRegistry;
@@ -196,6 +193,9 @@ public class DownloadItemManager {
         File rootDir = new File(DOWNLOAD_BASE_PATH);
         File summaryJsonFile = new File(rootDir, "summary.json");
         try {
+            if(summaryJsonFile.getParentFile().exists() == false) {
+                summaryJsonFile.getParentFile().mkdirs();
+            }
             FileUtils.writeStringToFile(summaryJsonFile, summaryJson.toString(), "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
