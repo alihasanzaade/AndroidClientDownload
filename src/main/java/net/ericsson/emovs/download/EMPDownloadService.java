@@ -105,7 +105,7 @@ public class EMPDownloadService extends Service {
                 if (DownloadItemManager.getInstance().hasAssetsToDelete()) {
                     DownloadItemManager.getInstance().flushRemovedAssets();
                 }
-                if (DownloadItemManager.getInstance().count(DownloadItem.STATE_QUEUED) > 0) {
+                if (DownloadItemManager.getInstance().count(DownloadItem.State.QUEUED) > 0) {
                     if (DownloadItemManager.getInstance().canStartNewDownload()) {
                         Log.d(TAG, "Downloading next asset...");
                         DownloadItemManager.getInstance().downloadNext();
@@ -116,8 +116,8 @@ public class EMPDownloadService extends Service {
                         continue;
                     }
                 }
-                else if (DownloadItemManager.getInstance().count(DownloadItem.STATE_DOWNLOADING) == 0 &&
-                         DownloadItemManager.getInstance().count(DownloadItem.STATE_PAUSED) == 0) {
+                else if (DownloadItemManager.getInstance().count(DownloadItem.State.DOWNLOADING) == 0 &&
+                         DownloadItemManager.getInstance().count(DownloadItem.State.PAUSED) == 0) {
                     Log.d(TAG, "Stopping service...");
                     stop();
                     break;

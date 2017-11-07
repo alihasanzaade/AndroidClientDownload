@@ -77,7 +77,7 @@ public class DownloadItemManager {
         this.downloadItems.put(info.onlinePlayable.getId(), item);
     }
 
-    public int count(int state) {
+    public int count(DownloadItem.State state) {
         int n = 0;
         for(DownloadItem item : this.downloadItems.values()) {
             if (item.getState() == state) {
@@ -88,7 +88,7 @@ public class DownloadItemManager {
     }
 
     public boolean canStartNewDownload() {
-        return count(DownloadItem.STATE_PAUSED) + count(DownloadItem.STATE_DOWNLOADING) < maxConcurrentDownloads;
+        return count(DownloadItem.State.PAUSED) + count(DownloadItem.State.DOWNLOADING) < maxConcurrentDownloads;
     }
 
     public boolean hasAssetsToDelete() {
@@ -97,14 +97,14 @@ public class DownloadItemManager {
 
     public void downloadNext() {
         for (DownloadItem item : this.downloadItems.values()) {
-            if (item.getState() == DownloadItem.STATE_QUEUED) {
+            if (item.getState() == DownloadItem.State.QUEUED) {
                 item.download();
                 break;
             }
         }
     }
 
-    public ArrayList<IDownload> getDownloads(int stateFilter) {
+    public ArrayList<IDownload> getDownloads(DownloadItem.State stateFilter) {
         ArrayList<IDownload> returnDownloads = new ArrayList<>();
         for (DownloadItem item : this.downloadItems.values()) {
             if (item.getState() == stateFilter) {
@@ -179,7 +179,7 @@ public class DownloadItemManager {
         for (DownloadInfo info : summary.values()) {
             JSONObject infoJson = new JSONObject();
             try {
-                infoJson.put("state", info.state);
+                infoJson.put("state", info.state.ordinal());
                 infoJson.put("path", info.downloadPath);
                 infoJson.put("progress", info.progress);
                 infoJson.put("downloadedBytes", info.downloadedBytes);
@@ -233,7 +233,8 @@ public class DownloadItemManager {
                 for (int i = 0; i < summaryJson.length(); ++i) {
                     JSONObject infoJson = summaryJson.getJSONObject(i);
                     DownloadInfo info = new DownloadInfo();
-                    info.state = infoJson.optInt("state", DownloadItem.STATE_FAILED);
+
+                    info.state = DownloadItem.State.values()[infoJson.optInt("state", DownloadItem.State.FAILED.ordinal())];
                     info.downloadPath = infoJson.optString("path", "");
                     info.progress = infoJson.optDouble("progress", 0.0);
                     info.downloadedBytes = infoJson.optLong("downloadedBytes", 0);

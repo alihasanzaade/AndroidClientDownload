@@ -99,7 +99,7 @@ class DashDownloader extends Thread {
 		this.errorMessage = message;
 
 		if (this.parent != null) {
-			this.parent.setState(DownloadItem.STATE_FAILED);
+			this.parent.setState(DownloadItem.State.FAILED);
 		}
 		for(IDownloadEventListener callback : this.stateUpdaters.values()) {
 			callback.onError(errorCode, message);
@@ -204,7 +204,7 @@ class DashDownloader extends Thread {
 		}
         
 		while (isEndOfStream() == false) {
-			if (this.parent.getState() == DownloadItem.STATE_PAUSED) {
+			if (this.parent.getState() == DownloadItem.State.PAUSED) {
                 Thread.sleep(100);
                 continue;
             }

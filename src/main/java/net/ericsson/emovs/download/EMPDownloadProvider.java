@@ -64,7 +64,7 @@ public class EMPDownloadProvider {
         return DownloadItemManager.getInstance().getDownloads();
     }
 
-    public ArrayList<IDownload> getDownloads(int stateFilter) {
+    public ArrayList<IDownload> getDownloads(DownloadItem.State stateFilter) {
         return DownloadItemManager.getInstance().getDownloads(stateFilter);
     }
 

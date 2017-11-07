@@ -11,7 +11,7 @@ import java.util.UUID;
  */
 
 public class DownloadInfo implements Serializable {
-    int state;
+    DownloadItem.State state;
     double progress;
     long downloadedBytes;
     String downloadPath;

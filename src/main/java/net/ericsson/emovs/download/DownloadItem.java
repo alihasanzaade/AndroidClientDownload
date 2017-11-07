@@ -55,14 +55,18 @@ import static android.os.Environment.getExternalStorageDirectory;
 public class DownloadItem implements IDownload {
     private static final String TAG = DownloadItem.class.toString();
 
-    public static final int STATE_QUEUED = 0;
-    public static final int STATE_DOWNLOADING = 1;
-    public static final int STATE_PAUSED = 2;
-    public static final int STATE_COMPLETED = 3;
-    public static final int STATE_FAILED = 4;
+    public enum State {
+        UNKNOWN,
+        QUEUED,
+        DOWNLOADING,
+        PAUSED,
+        COMPLETED,
+        FAILED,
+    };
+
 
     private UUID uuid;
-    private int state;
+    private State state;
     private double progress;
     private IPlayable onlinePlayable;
     private EmpOfflineAsset offlinePlayable;
@@ -86,11 +90,11 @@ public class DownloadItem implements IDownload {
         this.offlinePlayable = info.offlinePlayable;
         this.onlinePlayable = info.onlinePlayable;
         this.downloadedSize = info.downloadedBytes;
-        if (state == DownloadItem.STATE_DOWNLOADING || state == DownloadItem.STATE_PAUSED || downloadedSize == 0) {
+        if (state == State.DOWNLOADING || state == State.PAUSED || downloadedSize == 0) {
             new RunnableThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (state == DownloadItem.STATE_DOWNLOADING || state == DownloadItem.STATE_PAUSED) {
+                    if (state == State.DOWNLOADING || state == State.PAUSED) {
                         download(getId(), null);
                     }
                     if (downloadedSize == 0) {
@@ -110,7 +114,7 @@ public class DownloadItem implements IDownload {
         this.onlinePlayable = onlinePlayable;
         this.downloadPath = DownloadItemManager.DOWNLOAD_BASE_PATH + onlinePlayable.getId();
         setAnalytics();
-        setState(STATE_QUEUED);
+        setState(State.QUEUED);
     }
 
     private void setAnalytics() {
@@ -118,7 +122,7 @@ public class DownloadItem implements IDownload {
     }
 
     public void download() {
-        setState(STATE_DOWNLOADING);
+        setState(State.DOWNLOADING);
         download(getId(), null);
     }
 
@@ -197,7 +201,7 @@ public class DownloadItem implements IDownload {
 //        this.offlinePlayable.entitlement = this.entitlement;
         this.offlinePlayable.localMediaPath = manifestPath;
         this.offlinePlayable.setJson(this.onlinePlayable.getJson());
-        setState(STATE_COMPLETED);
+        setState(State.COMPLETED);
 //        FileSerializer.write(this.offlinePlayable, this.downloadPath + "/offline_asset.ser");
         saveDownloadInfo();
     }
@@ -296,8 +300,8 @@ public class DownloadItem implements IDownload {
         this.offlinePlayable = offlinePlayable;
     }
 
-    public void setState(int state) {
-        Log.d(TAG, "New download state: " + Integer.toString(state));
+    public void setState(State state) {
+        Log.d(TAG, "New download state: " + state.name());
         this.state = state;
         saveDownloadInfo();
     }
@@ -320,15 +324,15 @@ public class DownloadItem implements IDownload {
     }
 
     public void pause() {
-        if (getState() == DownloadItem.STATE_DOWNLOADING) {
-            setState(DownloadItem.STATE_PAUSED);
+        if (getState() == State.DOWNLOADING) {
+            setState(State.PAUSED);
             this.downloaderWorker.notifyUpdatersPause();
         }
     }
 
     public void resume() {
-        if (getState() == DownloadItem.STATE_PAUSED) {
-            setState(DownloadItem.STATE_DOWNLOADING);
+        if (getState() == State.PAUSED) {
+            setState(State.DOWNLOADING);
             this.downloaderWorker.notifyUpdatersResume();
         }
     }
@@ -386,7 +390,7 @@ public class DownloadItem implements IDownload {
         return this.offlinePlayable;
     }
 
-    public int getState() {
+    public State getState() {
         return state;
     }
 
