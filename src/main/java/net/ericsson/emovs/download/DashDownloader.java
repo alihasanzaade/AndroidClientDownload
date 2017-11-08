@@ -56,19 +56,19 @@ class DashDownloader extends Thread {
 	final String TIMESCALE = "timescale";
 	final String ID = "id";
     
-	int streamDuration;
-	Configuration conf;
+	protected long streamDuration;
+	protected Configuration conf;
 
-	HashMap<String, String> chunkMemory;
-	HashMap<String, Integer> currentIndexMap;	
-	ArrayList<AsyncFileWriter> pendingWriters;
-	HashMap<String, IDownloadEventListener> stateUpdaters;
-    DownloadItem parent;
+	protected HashMap<String, String> chunkMemory;
+	protected HashMap<String, Integer> currentIndexMap;
+	protected ArrayList<AsyncFileWriter> pendingWriters;
+	protected HashMap<String, IDownloadEventListener> stateUpdaters;
+	protected DownloadItem parent;
 
-	RunnableThread sizeEstimator;
+	protected RunnableThread sizeEstimator;
 
-	int errorCode;
-	String errorMessage;
+	protected int errorCode;
+	protected String errorMessage;
     
 	public DashDownloader (DownloadItem parent) {
 		this.chunkMemory = new HashMap<>();
@@ -302,7 +302,7 @@ class DashDownloader extends Thread {
     	return true;
     }
     
-    public static int getDuration(String mediaPresentationDuration) {
+    public static long getDuration(String mediaPresentationDuration) {
     	mediaPresentationDuration = mediaPresentationDuration.replaceAll("S", "");
     	String[] durationParts = mediaPresentationDuration.split("M");
     	
@@ -320,7 +320,7 @@ class DashDownloader extends Thread {
     		scanner.nextInt();	
     		int pHours = scanner.nextInt();
     		int pMinutes = scanner.nextInt();    		
-    		int duration = seconds + pMinutes*60 + pHours*3600;
+    		long duration = seconds + pMinutes*60 + pHours*3600;
 
     		scanner.close();
     		
