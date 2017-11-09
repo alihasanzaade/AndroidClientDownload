@@ -69,7 +69,7 @@ public class DashDownloaderTest {
 
     @Test
     public void downloadSuccessTest() throws Exception {
-        // TODO: find a way to store a static dash vod in azure a download that asset
+        // TODO: find a way to store a static dash vod in azure a download that asset & give storage permission to android
         Context appContext = InstrumentationRegistry.getTargetContext();
         ContextRegistry.bind(appContext);
         EmpAsset asset = new EmpAsset();

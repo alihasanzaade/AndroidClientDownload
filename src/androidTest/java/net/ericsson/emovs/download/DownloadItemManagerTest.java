@@ -1,12 +1,21 @@
 package net.ericsson.emovs.download;
 
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import net.ericsson.emovs.download.interfaces.IDownload;
+import net.ericsson.emovs.exposure.models.EmpAsset;
+import net.ericsson.emovs.utilities.ContextRegistry;
+
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
@@ -30,8 +39,57 @@ public class DownloadItemManagerTest {
     }
 
     @Test
-    public void dummyTest() throws Exception {
+    public void assetSelectionTest() throws Exception {
+        Context appContext = InstrumentationRegistry.getTargetContext();
+        ContextRegistry.bind(appContext);
+
+        DownloadItemManager manager = new DownloadItemManager();
+
+        EmpAsset asset = new EmpAsset();
+        asset.assetId = "test_12345";
+
+        manager.createItem(asset);
+        Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 1);
+        manager.createItem(asset);
+        Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 1);
+        ArrayList<IDownload> downloads = manager.getDownloads(DownloadItem.State.QUEUED);
+        Assert.assertTrue(downloads.size() == 1 && downloads.get(0).getOnlinePlayable().getId() == asset.getId());
     }
 
+    @Test
+    public void canStartDownloadTest() throws Exception {
+        Context appContext = InstrumentationRegistry.getTargetContext();
+        ContextRegistry.bind(appContext);
+
+        DownloadItemManager manager = new DownloadItemManager();
+
+        EmpAsset asset = new EmpAsset();
+        asset.assetId = "test_12345";
+
+        manager.createItem(asset);
+        Assert.assertTrue(manager.canStartNewDownload());
+    }
+
+    @Test
+    public void assetDeletionTest() throws Exception {
+        Context appContext = InstrumentationRegistry.getTargetContext();
+        ContextRegistry.bind(appContext);
+
+        DownloadItemManager manager = new DownloadItemManager();
+
+        EmpAsset asset = new EmpAsset();
+        asset.assetId = "test_12345";
+
+        manager.createItem(asset);
+        Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 1);
+        manager.createItem(asset);
+        Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 1);
+        ArrayList<IDownload> downloads = manager.getDownloads(DownloadItem.State.QUEUED);
+        Assert.assertTrue(downloads.size() == 1 && downloads.get(0).getOnlinePlayable().getId() == asset.getId());
+        manager.delete(asset);
+        Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 1);
+        manager.flushRemovedAssets();
+        Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 0);
+    }
 
 }
