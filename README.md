@@ -1,6 +1,7 @@
 # AndroidClientDownload   [![Release](https://jitpack.io/v/EricssonBroadcastServices/AndroidClientDownload.svg)](https://jitpack.io/#EricssonBroadcastServices/AndroidClientDownload)
 
 * [Features](#features)
+* [Tutorials](#tutorials)
 * [License](https://github.com/EricssonBroadcastServices/AndroidClientDownload/blob/master/LICENSE)
 * [Requirements](#requirements)
 * [Installation](#installation)
