@@ -13,7 +13,6 @@ EMPDownloadProvider.getInstance().add(asset);
 To track the status of each download, it is possible to query the **EMPDownloadProvider**:
 
 ```java
-// getDownloads with no arguments to retrieve all download entries regardless of state
 ArrayList<IDownload> completed = EMPDownloadProvider.getInstance().getDownloads(DownloadItem.State.COMPLETED);
 ```
 
