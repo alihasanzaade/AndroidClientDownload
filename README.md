@@ -10,7 +10,13 @@
 
 ## Features
 
+- [x] EMP Integration & Analytics
+- [x] DASH VOD Download
+- [x] Widevine License Download
 
+## Tutorials
+
+- [Queuing Downloads and Tracking Download Events](tutorials/tutorial-download-basics.md)
 
 ## Requirements
 
