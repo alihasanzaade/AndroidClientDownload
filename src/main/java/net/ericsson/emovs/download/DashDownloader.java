@@ -94,6 +94,10 @@ class DashDownloader extends Thread {
 		this.stateUpdaters.put(key, callback);
 	}
 
+	public void unsetCallback(String key) {
+		this.stateUpdaters.remove(key);
+	}
+
 	public void notifyUpdatersError(int errorCode, String message) {
 		this.errorCode = errorCode;
 		this.errorMessage = message;

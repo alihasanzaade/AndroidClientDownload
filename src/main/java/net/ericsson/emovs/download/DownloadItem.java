@@ -418,11 +418,19 @@ public class DownloadItem implements IDownload {
     }
 
     @Override
-    public void addEventListener(IDownloadEventListener listener) {
+    public void addEventListener(String key, IDownloadEventListener listener) {
         if (this.downloaderWorker == null) {
             return;
         }
-        this.downloaderWorker.setCallback(UUID.randomUUID().toString(), listener);
+        this.downloaderWorker.setCallback(key, listener);
+    }
+
+    @Override
+    public void removeEventListener(String key) {
+        if (this.downloaderWorker == null) {
+            return;
+        }
+        this.downloaderWorker.unsetCallback(key);
     }
 
     @Override

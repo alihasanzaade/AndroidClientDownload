@@ -17,5 +17,6 @@ public interface IDownload {
     long getMediaEstimatedSize();
     long getDownloadedSize();
     double getProgress();
-    void addEventListener(IDownloadEventListener listener);
+    void addEventListener(String key, IDownloadEventListener listener);
+    void removeEventListener(String key);
 }
