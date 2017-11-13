@@ -164,7 +164,7 @@ public class DownloadItem implements IDownload {
                     new File(self.downloadPath).mkdirs();
                 }
 
-                FileSerializer.write(entitlement, self.downloadPath + "/entitlement.ser");
+                FileSerializer.writeJson(entitlement, self.downloadPath + "/entitlement.ser");
 
                 Log.d(TAG, "Locator: " + entitlement.mediaLocator);
 
