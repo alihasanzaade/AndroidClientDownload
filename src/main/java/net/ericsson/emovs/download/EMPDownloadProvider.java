@@ -6,7 +6,7 @@ import net.ericsson.emovs.exposure.interfaces.IPlayable;
 import net.ericsson.emovs.utilities.ServiceUtils;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
-import net.ericsson.emovs.utilities.ContextRegistry;
+import net.ericsson.emovs.utilities.EMPRegistry;
 
 import java.util.ArrayList;
 
@@ -67,27 +67,27 @@ public class EMPDownloadProvider {
     }
 
     public void startService() throws Exception {
-        if (ContextRegistry.get() == null) {
+        if (EMPRegistry.applicationContext() == null) {
             throw  new Exception("APP_NOT_BOUND_TO_DOWNLOADER_PROVIDER");
         }
         if (isDownloadServiceRunning() == false) {
-            this.downloadServiceIntent = new Intent(ContextRegistry.get(), EMPDownloadService.class);
+            this.downloadServiceIntent = new Intent(EMPRegistry.applicationContext(), EMPDownloadService.class);
             this.downloadServiceIntent.setAction(EMPDownloadService.class.getName());
-            ContextRegistry.get().startService(downloadServiceIntent);
+            EMPRegistry.applicationContext().startService(downloadServiceIntent);
         }
     }
 
     public void stopService() {
         if (isDownloadServiceRunning() == true) {
-            ContextRegistry.get().stopService(this.downloadServiceIntent);
+            EMPRegistry.applicationContext().stopService(this.downloadServiceIntent);
         }
     }
 
     public boolean isDownloadServiceRunning() {
-        if (ContextRegistry.get() == null) {
+        if (EMPRegistry.applicationContext() == null) {
             return false;
         }
-        return ServiceUtils.isServiceRunning(ContextRegistry.get(), EMPDownloadService.class);
+        return ServiceUtils.isServiceRunning(EMPRegistry.applicationContext(), EMPDownloadService.class);
     }
 
 }

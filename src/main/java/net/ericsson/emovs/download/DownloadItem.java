@@ -20,7 +20,7 @@ import net.ericsson.emovs.utilities.RunnableThread;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
-import net.ericsson.emovs.utilities.ContextRegistry;
+import net.ericsson.emovs.utilities.EMPRegistry;
 
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
@@ -201,7 +201,7 @@ public class DownloadItem implements IDownload {
         if (licenseDetails == null) {
             return;
         }
-        WidevineOfflineLicenseManager downloader = new WidevineOfflineLicenseManager(ContextRegistry.get());
+        WidevineOfflineLicenseManager downloader = new WidevineOfflineLicenseManager(EMPRegistry.applicationContext());
 
         String licenseWithToken = Uri.parse(licenseDetails.first)
                 .buildUpon()
@@ -444,6 +444,6 @@ public class DownloadItem implements IDownload {
     }
 
     public String getVersion() {
-        return ContextRegistry.get().getString(R.string.empdownloader_version);
+        return EMPRegistry.applicationContext().getString(R.string.empdownloader_version);
     }
 }

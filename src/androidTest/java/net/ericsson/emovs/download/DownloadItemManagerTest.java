@@ -6,7 +6,7 @@ import android.support.test.runner.AndroidJUnit4;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 import net.ericsson.emovs.exposure.models.EmpAsset;
-import net.ericsson.emovs.utilities.ContextRegistry;
+import net.ericsson.emovs.utilities.EMPRegistry;
 
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -41,7 +41,7 @@ public class DownloadItemManagerTest {
     @Test
     public void assetSelectionTest() throws Exception {
         Context appContext = InstrumentationRegistry.getTargetContext();
-        ContextRegistry.bind(appContext);
+        EMPRegistry.bindApplicationContext(appContext);
 
         DownloadItemManager manager = new DownloadItemManager();
 
@@ -59,7 +59,7 @@ public class DownloadItemManagerTest {
     @Test
     public void canStartDownloadTest() throws Exception {
         Context appContext = InstrumentationRegistry.getTargetContext();
-        ContextRegistry.bind(appContext);
+        EMPRegistry.bindApplicationContext(appContext);
 
         DownloadItemManager manager = new DownloadItemManager();
 
@@ -73,7 +73,7 @@ public class DownloadItemManagerTest {
     @Test
     public void assetDeletionTest() throws Exception {
         Context appContext = InstrumentationRegistry.getTargetContext();
-        ContextRegistry.bind(appContext);
+        EMPRegistry.bindApplicationContext(appContext);
 
         DownloadItemManager manager = new DownloadItemManager();
 

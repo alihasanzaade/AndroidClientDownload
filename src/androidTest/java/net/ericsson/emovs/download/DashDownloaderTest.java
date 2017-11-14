@@ -5,7 +5,7 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
 import net.ericsson.emovs.exposure.models.EmpAsset;
-import net.ericsson.emovs.utilities.ContextRegistry;
+import net.ericsson.emovs.utilities.EMPRegistry;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,7 +47,7 @@ public class DashDownloaderTest {
     @Test
     public void initTest() throws Exception {
         Context appContext = InstrumentationRegistry.getTargetContext();
-        ContextRegistry.bind(appContext);
+        EMPRegistry.bindApplicationContext(appContext);
         EmpAsset asset = new EmpAsset();
         asset.assetId = "test_12345";
 
@@ -55,7 +55,7 @@ public class DashDownloaderTest {
         Assert.assertTrue(DownloadItemManager.DOWNLOAD_BASE_PATH != null);
         Assert.assertTrue(manager.count(DownloadItem.State.COMPLETED) == 0);
 
-        DownloadItem item = new DownloadItem(ContextRegistry.get(), asset);
+        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), asset);
         DashDownloader downloader = new DashDownloader(item);
 
         Assert.assertFalse(downloader.isAlive());
@@ -71,7 +71,7 @@ public class DashDownloaderTest {
     public void downloadSuccessTest() throws Exception {
         // TODO: find a way to store a static dash vod in azure a download that asset & give storage permission to android
         Context appContext = InstrumentationRegistry.getTargetContext();
-        ContextRegistry.bind(appContext);
+        EMPRegistry.bindApplicationContext(appContext);
         EmpAsset asset = new EmpAsset();
         asset.assetId = "test_12345";
 
@@ -79,7 +79,7 @@ public class DashDownloaderTest {
         Assert.assertTrue(DownloadItemManager.DOWNLOAD_BASE_PATH != null);
         Assert.assertTrue(manager.count(DownloadItem.State.COMPLETED) == 0);
 
-        DownloadItem item = new DownloadItem(ContextRegistry.get(), asset);
+        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), asset);
         DashDownloader downloader = new DashDownloader(item);
 
         Assert.assertFalse(downloader.isAlive());
@@ -101,7 +101,7 @@ public class DashDownloaderTest {
     @Test
     public void downloadErrorDownloadingManifestTest() throws Exception {
         Context appContext = InstrumentationRegistry.getTargetContext();
-        ContextRegistry.bind(appContext);
+        EMPRegistry.bindApplicationContext(appContext);
         EmpAsset asset = new EmpAsset();
         asset.assetId = "test_12345";
 
@@ -109,7 +109,7 @@ public class DashDownloaderTest {
         Assert.assertTrue(DownloadItemManager.DOWNLOAD_BASE_PATH != null);
         Assert.assertTrue(manager.count(DownloadItem.State.COMPLETED) == 0);
 
-        DownloadItem item = new DownloadItem(ContextRegistry.get(), asset);
+        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), asset);
         DashDownloader downloader = new DashDownloader(item);
 
         Assert.assertFalse(downloader.isAlive());

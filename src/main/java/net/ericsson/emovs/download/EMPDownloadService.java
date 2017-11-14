@@ -14,7 +14,7 @@ import android.util.Log;
 import net.ericsson.emovs.exposure.clients.exposure.ExposureClient;
 import net.ericsson.emovs.utilities.RunnableThread;
 
-import net.ericsson.emovs.utilities.ContextRegistry;
+import net.ericsson.emovs.utilities.EMPRegistry;
 
 
 /**
@@ -86,7 +86,7 @@ public class EMPDownloadService extends Service {
 
     private void waitUntilLogin() {
         while (ExposureClient.getInstance().getSessionToken() == null||
-                ContextCompat.checkSelfPermission(ContextRegistry.get(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                ContextCompat.checkSelfPermission(EMPRegistry.applicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
             try {
                 Thread.sleep(100);

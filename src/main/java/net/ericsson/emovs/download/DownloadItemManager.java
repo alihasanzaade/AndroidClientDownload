@@ -9,7 +9,7 @@ import net.ericsson.emovs.exposure.models.EmpOfflineAsset;
 import net.ericsson.emovs.utilities.FileSerializer;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
-import net.ericsson.emovs.utilities.ContextRegistry;
+import net.ericsson.emovs.utilities.EMPRegistry;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -51,7 +51,7 @@ public class DownloadItemManager {
     }
 
     protected DownloadItemManager() {
-        DOWNLOAD_BASE_PATH = getExternalStorageDirectory().getPath() + "/" + DOWNLOAD_FOLDER + "/" + ContextRegistry.get().getPackageName() + "/";
+        DOWNLOAD_BASE_PATH = getExternalStorageDirectory().getPath() + "/" + DOWNLOAD_FOLDER + "/" + EMPRegistry.applicationContext().getPackageName() + "/";
         this.downloadItems = new HashMap<>();
         this.maxConcurrentDownloads = DEFAULT_CONCURRENT_DOWNLOADS;
         this.assetsToDelete = new LinkedList<>();
@@ -61,7 +61,7 @@ public class DownloadItemManager {
         if (this.downloadItems.containsKey(playable.getId())) {
             return false;
         }
-        DownloadItem item = new DownloadItem(ContextRegistry.get(), playable);
+        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), playable);
         this.downloadItems.put(playable.getId(), item);
         return true;
     }
@@ -70,7 +70,7 @@ public class DownloadItemManager {
         if (this.downloadItems.containsKey(info.onlinePlayable.getId())) {
            return;
         }
-        DownloadItem item = new DownloadItem(ContextRegistry.get(), info);
+        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), info);
         this.downloadItems.put(info.onlinePlayable.getId(), item);
     }
 
