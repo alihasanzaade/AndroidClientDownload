@@ -181,7 +181,7 @@ public class DownloadItem implements IDownload {
                 }
             }
         };
-        EMPEntitlementProvider.getInstance().playVod(assetId, new EntitlementCallback(assetId, null, null, onEntitlementRunnable, onErrorRunnable));
+        EMPEntitlementProvider.getInstance().download(assetId, new EntitlementCallback(assetId, null, null, onEntitlementRunnable, onErrorRunnable));
     }
 
     public void onDownloadSuccess(String manifestPath) {
