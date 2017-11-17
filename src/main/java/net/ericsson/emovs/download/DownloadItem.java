@@ -170,6 +170,7 @@ public class DownloadItem implements IDownload {
 
                 downloadLicense(assetId, entitlement.mediaLocator, entitlement.playToken);
                 downloadMedia(self.downloadPath, entitlement, callback);
+                createDownloadedAsset(self.downloadPath + "/manifest_local.mpd");
             }
         };
         final ErrorRunnable onErrorRunnable = new ErrorRunnable() {
@@ -185,14 +186,17 @@ public class DownloadItem implements IDownload {
     }
 
     public void onDownloadSuccess(String manifestPath) {
+        createDownloadedAsset(manifestPath);
+        setState(State.COMPLETED);
+//        FileSerializer.write(this.offlinePlayable, this.downloadPath + "/offline_asset.ser");
+    }
+
+    private void createDownloadedAsset(String manifestPath) {
         if (this.offlinePlayable == null) {
             this.offlinePlayable = new EmpOfflineAsset();
         }
-//        this.offlinePlayable.entitlement = this.entitlement;
         this.offlinePlayable.localMediaPath = manifestPath;
         this.offlinePlayable.setJson(this.onlinePlayable.getJson());
-        setState(State.COMPLETED);
-//        FileSerializer.write(this.offlinePlayable, this.downloadPath + "/offline_asset.ser");
         saveDownloadInfo();
     }
 
