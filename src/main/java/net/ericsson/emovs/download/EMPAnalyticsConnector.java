@@ -3,7 +3,7 @@ package net.ericsson.emovs.download;
 import net.ericsson.emovs.analytics.EMPAnalyticsProvider;
 import net.ericsson.emovs.analytics.EventParameters;
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
-import net.ericsson.emovs.exposure.entitlements.Entitlement;
+import net.ericsson.emovs.utilities.Entitlement;
 
 import java.util.HashMap;
 
