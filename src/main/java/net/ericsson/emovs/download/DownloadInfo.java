@@ -1,7 +1,7 @@
 package net.ericsson.emovs.download;
 
-import net.ericsson.emovs.exposure.interfaces.IPlayable;
-import net.ericsson.emovs.exposure.models.EmpOfflineAsset;
+import net.ericsson.emovs.utilities.interfaces.IPlayable;
+import net.ericsson.emovs.utilities.models.EmpOfflineAsset;
 
 import java.io.Serializable;
 import java.util.UUID;

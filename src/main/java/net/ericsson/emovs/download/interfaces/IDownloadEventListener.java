@@ -1,7 +1,7 @@
 package net.ericsson.emovs.download.interfaces;
 
 
-import net.ericsson.emovs.utilities.Entitlement;
+import net.ericsson.emovs.utilities.entitlements.Entitlement;
 
 /**
  * Created by Joao Coelho on 2017-09-27.

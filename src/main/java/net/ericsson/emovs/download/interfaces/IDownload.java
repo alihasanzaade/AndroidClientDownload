@@ -1,8 +1,8 @@
 package net.ericsson.emovs.download.interfaces;
 
 import net.ericsson.emovs.download.DownloadItem;
-import net.ericsson.emovs.exposure.interfaces.IPlayable;
-import net.ericsson.emovs.exposure.models.EmpOfflineAsset;
+import net.ericsson.emovs.utilities.interfaces.IPlayable;
+import net.ericsson.emovs.utilities.models.EmpOfflineAsset;
 
 /**
  * Created by Joao Coelho on 2017-10-19.

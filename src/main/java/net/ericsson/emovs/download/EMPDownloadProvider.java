@@ -2,11 +2,11 @@ package net.ericsson.emovs.download;
 
 import android.content.Intent;
 
-import net.ericsson.emovs.exposure.interfaces.IPlayable;
-import net.ericsson.emovs.utilities.ServiceUtils;
+import net.ericsson.emovs.utilities.interfaces.IPlayable;
+import net.ericsson.emovs.utilities.system.ServiceUtils;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
-import net.ericsson.emovs.utilities.EMPRegistry;
+import net.ericsson.emovs.utilities.emp.EMPRegistry;
 
 import java.util.ArrayList;
 

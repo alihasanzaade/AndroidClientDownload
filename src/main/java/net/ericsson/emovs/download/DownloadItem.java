@@ -7,20 +7,20 @@ import android.util.Pair;
 
 import net.ericsson.emovs.exposure.auth.SharedPropertiesICredentialsStorage;
 import net.ericsson.emovs.exposure.entitlements.EMPEntitlementProvider;
-import net.ericsson.emovs.exposure.entitlements.EntitledRunnable;
-import net.ericsson.emovs.exposure.entitlements.EntitlementCallback;
-import net.ericsson.emovs.exposure.interfaces.IPlayable;
-import net.ericsson.emovs.exposure.models.EmpAsset;
-import net.ericsson.emovs.exposure.models.EmpOfflineAsset;
-import net.ericsson.emovs.utilities.Entitlement;
-import net.ericsson.emovs.utilities.ErrorCodes;
-import net.ericsson.emovs.utilities.ErrorRunnable;
-import net.ericsson.emovs.utilities.FileSerializer;
-import net.ericsson.emovs.utilities.RunnableThread;
+import net.ericsson.emovs.utilities.entitlements.EntitledRunnable;
+import net.ericsson.emovs.utilities.entitlements.EntitlementCallback;
+import net.ericsson.emovs.utilities.interfaces.IPlayable;
+import net.ericsson.emovs.utilities.models.EmpAsset;
+import net.ericsson.emovs.utilities.models.EmpOfflineAsset;
+import net.ericsson.emovs.utilities.entitlements.Entitlement;
+import net.ericsson.emovs.utilities.errors.ErrorCodes;
+import net.ericsson.emovs.utilities.errors.ErrorRunnable;
+import net.ericsson.emovs.utilities.system.FileSerializer;
+import net.ericsson.emovs.utilities.system.RunnableThread;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
-import net.ericsson.emovs.utilities.EMPRegistry;
+import net.ericsson.emovs.utilities.emp.EMPRegistry;
 
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;

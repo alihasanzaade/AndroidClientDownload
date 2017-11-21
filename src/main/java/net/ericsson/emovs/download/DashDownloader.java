@@ -3,9 +3,9 @@ package net.ericsson.emovs.download;
 import android.util.Log;
 
 
-import net.ericsson.emovs.utilities.Entitlement;
-import net.ericsson.emovs.utilities.ErrorCodes;
-import net.ericsson.emovs.utilities.RunnableThread;
+import net.ericsson.emovs.utilities.entitlements.Entitlement;
+import net.ericsson.emovs.utilities.errors.ErrorCodes;
+import net.ericsson.emovs.utilities.system.RunnableThread;
 
 import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
 

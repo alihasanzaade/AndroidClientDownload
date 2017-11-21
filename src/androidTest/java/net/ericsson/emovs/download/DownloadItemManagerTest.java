@@ -2,22 +2,17 @@ package net.ericsson.emovs.download;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
-import net.ericsson.emovs.exposure.models.EmpAsset;
-import net.ericsson.emovs.utilities.EMPRegistry;
+import net.ericsson.emovs.utilities.models.EmpAsset;
+import net.ericsson.emovs.utilities.emp.EMPRegistry;
 
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 
 import java.util.ArrayList;
-
-import static org.junit.Assert.*;
 
 /*
  * Copyright (c) 2017 Ericsson. All Rights Reserved

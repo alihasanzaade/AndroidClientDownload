@@ -2,14 +2,14 @@ package net.ericsson.emovs.download;
 
 import android.util.Log;
 
-import net.ericsson.emovs.exposure.interfaces.IPlayable;
+import net.ericsson.emovs.utilities.interfaces.IPlayable;
 import net.ericsson.emovs.exposure.metadata.builders.EmpBaseBuilder;
-import net.ericsson.emovs.exposure.models.EmpAsset;
-import net.ericsson.emovs.exposure.models.EmpOfflineAsset;
-import net.ericsson.emovs.utilities.FileSerializer;
+import net.ericsson.emovs.utilities.models.EmpAsset;
+import net.ericsson.emovs.utilities.models.EmpOfflineAsset;
+import net.ericsson.emovs.utilities.system.FileSerializer;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
-import net.ericsson.emovs.utilities.EMPRegistry;
+import net.ericsson.emovs.utilities.emp.EMPRegistry;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
