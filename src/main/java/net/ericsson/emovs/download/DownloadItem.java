@@ -5,8 +5,10 @@ import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
 
+import net.ericsson.emovs.download.drm.WidevineDownloadLicenseManager;
 import net.ericsson.emovs.exposure.auth.SharedPropertiesICredentialsStorage;
 import net.ericsson.emovs.exposure.entitlements.EMPEntitlementProvider;
+import net.ericsson.emovs.utilities.drm.DashLicenseDetails;
 import net.ericsson.emovs.utilities.entitlements.EntitledRunnable;
 import net.ericsson.emovs.utilities.entitlements.EntitlementCallback;
 import net.ericsson.emovs.utilities.interfaces.IPlayable;
@@ -201,11 +203,11 @@ public class DownloadItem implements IDownload {
     }
 
     private void downloadLicense(String mediaId, String manifestUrl, String playToken) {
-        Pair<String, String> licenseDetails = DownloadItem.getLicenseDetails(manifestUrl, false);
+        Pair<String, String> licenseDetails = DashLicenseDetails.getLicenseDetails(manifestUrl, false);
         if (licenseDetails == null) {
             return;
         }
-        WidevineOfflineLicenseManager downloader = new WidevineOfflineLicenseManager(EMPRegistry.applicationContext());
+        WidevineDownloadLicenseManager downloader = new WidevineDownloadLicenseManager(EMPRegistry.applicationContext());
 
         String licenseWithToken = Uri.parse(licenseDetails.first)
                 .buildUpon()
@@ -231,63 +233,6 @@ public class DownloadItem implements IDownload {
             this.downloaderWorker.setCallback("SINGLE_DOWNLOAD_ACTIVITY_CALLBACK", callback);
         }
         this.downloaderWorker.start();
-    }
-
-    public static Pair<String, String> getLicenseDetails(String manifestUrl, boolean isOffline) {
-        try {
-            XPath xpath = XPathFactory.newInstance().newXPath();
-            Document mpd = null;
-            if(isOffline) {
-                mpd = getManifestDocument(new File(manifestUrl));
-            }
-            else {
-                mpd = getManifestDocument(new URL(manifestUrl));
-            }
-            NodeList laurls = (NodeList) xpath.compile("//urn:microsoft:laurl").evaluate(mpd, XPathConstants.NODESET);
-            Log.d(TAG, "Node Count: " + laurls.getLength());
-            String drmLicenseUrl = null;
-            String drmInitializationBase64 = null;
-            if (laurls.getLength() > 0) {
-                Node laurl = laurls.item(0);
-                NamedNodeMap laurlAttrs = laurl.getAttributes();
-                Node licenseServerUrlNode = laurlAttrs.getNamedItem("licenseUrl");
-                drmLicenseUrl = licenseServerUrlNode.getNodeValue();
-                Log.d(TAG, "License Server URL: " + drmLicenseUrl);
-
-                NodeList psshCandidates = laurl.getParentNode().getChildNodes();
-                for (int j = 0; j < psshCandidates.getLength(); ++j) {
-                    Node pssh = psshCandidates.item(j);
-                    if (pssh.getNodeName().contains("pssh")) {
-                        drmInitializationBase64 = pssh.getTextContent();
-                        Log.d(TAG, "EMP Initialization Data: " + drmInitializationBase64);
-                        break;
-                    }
-                }
-            }
-
-            return new Pair<>(drmLicenseUrl, drmInitializationBase64);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static Document getManifestDocument(File manifestFile) throws Exception {
-        String manifestContent = FileUtils.readFileToString(manifestFile, "UTF-8");
-
-        Log.d(TAG, manifestContent);
-
-        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-        domFactory.setNamespaceAware(true);
-        DocumentBuilder builder = domFactory.newDocumentBuilder();
-        Document doc = builder.parse(new ByteArrayInputStream(manifestContent.getBytes()));
-        return doc;
-    }
-
-    private static Document getManifestDocument(URL manifestUrl) throws Exception {
-        File temp = File.createTempFile(UUID.randomUUID().toString(), ".mpd");
-        FileUtils.copyURLToFile(manifestUrl, temp);
-        return getManifestDocument(temp);
     }
 
     public void setDownloadedAsset(EmpOfflineAsset offlinePlayable) {

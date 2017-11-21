@@ -1,4 +1,4 @@
-package net.ericsson.emovs.download;
+package net.ericsson.emovs.download.drm;
 
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import android.net.Uri;
