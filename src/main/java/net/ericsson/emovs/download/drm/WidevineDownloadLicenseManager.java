@@ -21,9 +21,10 @@ import java.io.IOException;
 import static com.google.android.exoplayer2.ExoPlayerLibraryInfo.TAG;
 
 /**
+ * This class is responsible for downloading and storing a Widevine license in SharedStorage
+ *
  * Created by Joao Coelho on 2017-09-21.
  */
-
 public class WidevineDownloadLicenseManager {
     private final String EMP_WIDEVINE_KEYSTORE = "EMP_WIDEVINE_KEYSTORE";
     private final String KEY_OFFLINE_MEDIA_ID  = "OFFLINE_KEY_";
@@ -34,12 +35,25 @@ public class WidevineDownloadLicenseManager {
         this.ctx = ctx;
     }
 
+    /**
+     * Stores a downloaded license in the SharedStorage
+     *
+     * @param mediaId
+     * @param offlineAssetKeyId
+     */
     public void store(String mediaId, byte[] offlineAssetKeyId) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putString(KEY_OFFLINE_MEDIA_ID + mediaId, Base64.encodeToString (offlineAssetKeyId, Base64.DEFAULT));
         editor.commit();
     }
 
+    /**
+     * Downloads a license from a specific location
+     *
+     * @param licenseUrl
+     * @param initDataBase64
+     * @return
+     */
     public byte[] download(String licenseUrl, String initDataBase64) {
         if (Util.SDK_INT < 18) {
             return null;

@@ -27,9 +27,10 @@ import java.util.UUID;
 import static android.os.Environment.getExternalStorageDirectory;
 
 /**
+ * This class manages all download entries, states and which assets were flagged for deletion
+ *
  * Created by Joao Coelho on 2017-10-05.
  */
-
 public class DownloadItemManager {
     private static final String TAG = DownloadItemManager.class.toString();
     private static final String DOWNLOAD_FOLDER = "EMPDownloads";
@@ -57,6 +58,12 @@ public class DownloadItemManager {
         this.assetsToDelete = new LinkedList<>();
     }
 
+    /**
+     * Adds new download entry
+     *
+     * @param playable
+     * @return
+     */
     public boolean createItem(IPlayable playable) {
         if (this.downloadItems.containsKey(playable.getId())) {
             return false;
@@ -66,6 +73,11 @@ public class DownloadItemManager {
         return true;
     }
 
+    /**
+     * Recreates a download entry from a DownloadInfo object saved in filesystem
+     *
+     * @param info
+     */
     private void createItemFromDownloadInfo(DownloadInfo info) {
         if (this.downloadItems.containsKey(info.onlinePlayable.getId())) {
            return;
@@ -74,6 +86,12 @@ public class DownloadItemManager {
         this.downloadItems.put(info.onlinePlayable.getId(), item);
     }
 
+    /**
+     * Counts the number of download entries with a specific state
+     *
+     * @param state
+     * @return
+     */
     public int count(DownloadItem.State state) {
         int n = 0;
         for(DownloadItem item : this.downloadItems.values()) {
@@ -84,14 +102,27 @@ public class DownloadItemManager {
         return n;
     }
 
+    /**
+     * Checks if there is room to start a new download (by checking how many concurrent downloads and the max allowed concurrent download count)
+     *
+     * @return
+     */
     public boolean canStartNewDownload() {
         return count(DownloadItem.State.PAUSED) + count(DownloadItem.State.DOWNLOADING) < maxConcurrentDownloads;
     }
 
+
+    /**
+     * Informs if there are assets flagged for deletion
+     * @return
+     */
     public boolean hasAssetsToDelete() {
         return this.assetsToDelete.size() > 0;
     }
 
+    /**
+     * Starts the download of the next asset in queue
+     */
     public void downloadNext() {
         for (DownloadItem item : this.downloadItems.values()) {
             if (item.getState() == DownloadItem.State.QUEUED) {
@@ -101,6 +132,12 @@ public class DownloadItemManager {
         }
     }
 
+    /**
+     * Gets download entries for asset with a specific state
+     *
+     * @param stateFilter
+     * @return
+     */
     public ArrayList<IDownload> getDownloads(DownloadItem.State stateFilter) {
         ArrayList<IDownload> returnDownloads = new ArrayList<>();
         for (DownloadItem item : this.downloadItems.values()) {
@@ -111,6 +148,11 @@ public class DownloadItemManager {
         return returnDownloads;
     }
 
+    /**
+     * Gets all download entries
+     *
+     * @return
+     */
     public ArrayList<IDownload> getDownloads() {
         ArrayList<IDownload> returnDownloads = new ArrayList<>();
         for (DownloadItem item : this.downloadItems.values()) {
@@ -119,6 +161,11 @@ public class DownloadItemManager {
         return returnDownloads;
     }
 
+    /**
+     * Pauses a download
+     *
+     * @param playable
+     */
     public void pause(IPlayable playable) {
         boolean contains = this.downloadItems.containsKey(playable.getId());
         if(contains == false) {
@@ -127,6 +174,11 @@ public class DownloadItemManager {
         this.downloadItems.get(playable.getId()).pause();
     }
 
+    /**
+     * Resumes a download
+     *
+     * @param playable
+     */
     public void resume(IPlayable playable) {
         boolean contains = this.downloadItems.containsKey(playable.getId());
         if(contains == false) {
@@ -135,6 +187,11 @@ public class DownloadItemManager {
         this.downloadItems.get(playable.getId()).resume();
     }
 
+    /**
+     * Deletes a download
+     *
+     * @param playable
+     */
     public void delete(IPlayable playable) {
         if (this.downloadItems.containsKey(playable.getId()) == false) {
             return;
@@ -144,6 +201,11 @@ public class DownloadItemManager {
         updateSummary(playable.getId(), null);
     }
 
+    /**
+     * Retries a failed download
+     *
+     * @param playable
+     */
     public void retry(IPlayable playable) {
         boolean contains = this.downloadItems.containsKey(playable.getId());
         if(contains == false) {
@@ -152,6 +214,10 @@ public class DownloadItemManager {
         this.downloadItems.get(playable.getId()).retry();
     }
 
+    /**
+     * Deletes flagged assets from filesystem
+     *
+     */
     public void flushRemovedAssets() {
         while(this.assetsToDelete.size() > 0) {
             String assetId = this.assetsToDelete.pop();
@@ -171,6 +237,9 @@ public class DownloadItemManager {
         }
     }
 
+    /**
+     * Saves json download summary in filesystem
+     */
     public static void saveJsonSummary() {
         JSONArray summaryJson = new JSONArray();
         for (DownloadInfo info : summary.values()) {
@@ -202,6 +271,12 @@ public class DownloadItemManager {
         }
     }
 
+    /**
+     * Updates download summary
+     *
+     * @param assetId
+     * @param info
+     */
     public synchronized static void updateSummary(String assetId, DownloadInfo info) {
         long currentMillis = System.currentTimeMillis();
 
@@ -220,6 +295,9 @@ public class DownloadItemManager {
         Log.d(TAG, "Summary serialization duration: " + elapsedTime + "ms");
     }
 
+    /**
+     * Syncs download summary with filesystem
+     */
     public void syncWithStorage() {
         long currentMillis = System.currentTimeMillis();
         File rootDir = new File(DOWNLOAD_BASE_PATH);
