@@ -3,6 +3,15 @@ package net.ericsson.emovs.download;
 import android.util.Log;
 
 
+import net.ericsson.emovs.download.models.Manifest;
+import net.ericsson.emovs.download.models.adaptation.AdaptationSet;
+import net.ericsson.emovs.download.models.adaptation.AudioAdaptationSet;
+import net.ericsson.emovs.download.models.adaptation.TextAdaptationSet;
+import net.ericsson.emovs.download.models.adaptation.VideoAdaptationSet;
+import net.ericsson.emovs.download.models.tracks.AudioTrack;
+import net.ericsson.emovs.download.models.tracks.TextTrack;
+import net.ericsson.emovs.download.models.tracks.Track;
+import net.ericsson.emovs.download.models.tracks.VideoTrack;
 import net.ericsson.emovs.utilities.entitlements.Entitlement;
 import net.ericsson.emovs.utilities.errors.ErrorCodes;
 import net.ericsson.emovs.utilities.system.RunnableThread;
@@ -348,6 +357,127 @@ class DashDownloader extends Thread {
 		
 		return false;
     }
+
+	public void downloadManifestNew() throws Exception {
+		Manifest remoteManifest = new Manifest();
+
+		conf.reset();
+
+		URL u = new URL(conf.manifestUrl);
+		File manifestFile = new File(conf.folder + "/manifest.mpd");
+
+		boolean result = loadManifest(u, manifestFile);
+		if(result == false) {
+			System.err.println("StreamHandler: error downloading manifest.");
+			notifyUpdatersError(ErrorCodes.DOWNLOAD_MANIFEST_FAILED, "Error downloading manifest.");
+			return;
+		}
+
+		if (manifestFile.exists ()) {
+			String manifestContent = FileUtils.readFileToString(manifestFile, "UTF-8");
+			//String localManifestContent = "";
+			DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+			domFactory.setNamespaceAware(true);
+			DocumentBuilder builder = domFactory.newDocumentBuilder();
+			Document doc = builder.parse(new ByteArrayInputStream(manifestContent.getBytes()));
+			XPath xpath = XPathFactory.newInstance().newXPath();
+
+			Node mpdRoot = (Node) xpath.compile(MPD).evaluate(doc, XPathConstants.NODE);
+
+			NamedNodeMap mpdAttrs = mpdRoot.getAttributes();
+			Node mediaPresentationDurationNode = mpdAttrs.getNamedItem("mediaPresentationDuration");
+			String mediaPresentationDuration = mediaPresentationDurationNode.getNodeValue();
+			this.streamDuration = getDuration(mediaPresentationDuration);
+
+			System.out.println("Stream Duration: " + streamDuration);
+
+			NodeList adaptationSets = (NodeList) xpath.compile(ADAPTATION_SET).evaluate(doc, XPathConstants.NODESET);
+
+			for (int i = 0; i < adaptationSets.getLength(); i++) {
+				AdaptationSet remoteAdaptationSet = new AdaptationSet();
+				String mimeType = "n/a";
+
+				Node set = adaptationSets.item(i);
+
+				if(set == null) continue;
+
+				NamedNodeMap setAttrs = set.getAttributes();
+				Node idNode = setAttrs.getNamedItem(ID);
+				NodeList children = set.getChildNodes();
+
+                ArrayList<Track> remoteTracks = new ArrayList<>();
+
+				for (int k = 0; k < children.getLength(); k++) {
+					Node child = children.item(k);
+					if (child == null) {
+						continue;
+					}
+					if (child.getNodeName().equals(SEGMENT_TEMPLATE)) {
+                        remoteAdaptationSet.id = child.getAttributes().getNamedItem("id").getNodeValue();
+                        remoteAdaptationSet.duration = Long.parseLong(child.getAttributes().getNamedItem(DURATION).getNodeValue());
+                        remoteAdaptationSet.startNumber = Long.parseLong(child.getAttributes().getNamedItem("startNumber").getNodeValue());
+                        remoteAdaptationSet.timescale = Long.parseLong(child.getAttributes().getNamedItem(TIMESCALE).getNodeValue());
+                        remoteAdaptationSet.initSegment = child.getAttributes().getNamedItem(INITIALIZATION).getNodeValue();
+                        remoteAdaptationSet.segmentTemplate = child.getAttributes().getNamedItem(MEDIA).getNodeValue();
+					}
+					else if (child.getNodeName().equals(REPRESENTATION)) {
+                        String trackMimeType = child.getAttributes().getNamedItem("mimeType").getNodeValue();
+                        mimeType = trackMimeType;
+
+                        Track remoteTrack = null;
+
+                        if (trackMimeType.contains("video")) {
+                            remoteTrack = new VideoTrack();
+                        }
+                        else if (trackMimeType.contains("audio")) {
+                            remoteTrack = new AudioTrack();
+                        }
+                        else if (trackMimeType.contains("text")) {
+                            remoteTrack = new TextTrack();
+                        }
+
+                        remoteTrack.id = child.getAttributes().getNamedItem("id").getNodeValue();
+                        remoteTrack.mimeType = trackMimeType;
+                        remoteTrack.bandwidth = Long.parseLong(child.getAttributes().getNamedItem("bandwidth").getNodeValue());
+
+						NodeList repChildren = child.getChildNodes();
+						for (int j=0; j < repChildren.getLength(); ++j) {
+							Node rChild = repChildren.item(j);
+							if(rChild.getNodeName().equals(BASE_URL)) {
+								String baseUrl = rChild.getTextContent();
+                                remoteTrack.baseUrl = baseUrl;
+							}
+						}
+
+                        remoteTracks.add(remoteTrack);
+					}
+				}
+
+				if (mimeType.contains("video")) {
+					remoteAdaptationSet = new VideoAdaptationSet(remoteAdaptationSet);
+				}
+				else if (mimeType.contains("audio")) {
+					remoteAdaptationSet = new AudioAdaptationSet(remoteAdaptationSet);
+				}
+				else if (mimeType.contains("text")) {
+					remoteAdaptationSet = new TextAdaptationSet(remoteAdaptationSet);
+				}
+
+				remoteManifest.adaptationSets.add(remoteAdaptationSet);
+
+				//for (Integer bandwidth : bandwidthNodeMapper.keySet()) {
+				//	if(bandwidth < maxBandwidth) {
+				//		System.out.println("DashDownloader: removing unnecessary Representation bitrate - " + bandwidth);
+				//		Node nodeToRemove = bandwidthNodeMapper.get(bandwidth);
+				//		set.removeChild(nodeToRemove);
+				//	}
+				//}
+			}
+
+			File manifestLocal = new File(conf.folder + "/manifest_local.mpd");
+			FileUtils.writeByteArrayToFile(manifestLocal, getStringFromDocument(doc).getBytes());
+		}
+	}
 
     public void downloadManifest() throws Exception {
         conf.reset();
