@@ -16,16 +16,18 @@ public class AdaptationSet {
     public String segmentTemplate;
     public String initSegment;
     public long timescale;
-    public long duration;
+    public long segmentDuration;
     public long startNumber;
     public ArrayList<Track> tracks;
+    public long segmentDurationSeconds;
+    public long segmentCount;
+    public String lang;
 
     public AdaptationSet() {
         this.tracks = new ArrayList<>();
     }
 
     public AdaptationSet(AdaptationSet other) {
-        this.tracks = other.tracks;
         this.id = other.id;
         this.mimeType = other.mimeType;
         this.licenseServerUrl = other.licenseServerUrl;
@@ -33,7 +35,11 @@ public class AdaptationSet {
         this.segmentTemplate = other.segmentTemplate;
         this.initSegment = other.initSegment;
         this.timescale = other.timescale;
-        this.duration = other.duration;
+        this.segmentDuration = other.segmentDuration;
         this.startNumber = other.startNumber;
+        this.tracks = other.tracks;
+        this.segmentDurationSeconds = other.segmentDurationSeconds;
+        this.segmentCount = other.segmentCount;
+        this.lang = other.lang;
     }
 }

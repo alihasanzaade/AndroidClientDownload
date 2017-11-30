@@ -27,7 +27,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
 import javax.xml.parsers.DocumentBuilder; 
@@ -53,7 +52,6 @@ class DashDownloader extends Thread {
 	final int MAX_DOWNLOAD_ATTEMPTS = 5;
 	final int MAX_SEGMENT_DOWNLOAD_TIMEOUT = 20000;
 	final int MAX_HTTP_CONNECTION_TIMEOUT = 1000;
-    final int FIRST_INDEX = 1;
 
 	final String ADAPTATION_SET = "//urn:mpeg:dash:schema:mpd:2011:AdaptationSet";
 	final String MPD = "//urn:mpeg:dash:schema:mpd:2011:MPD";
@@ -65,12 +63,12 @@ class DashDownloader extends Thread {
 	final String DURATION = "duration";
 	final String TIMESCALE = "timescale";
 	final String ID = "id";
-    
-	protected long streamDuration;
+
+    protected Manifest remoteManifest;
 	protected Configuration conf;
 
 	protected HashMap<String, String> chunkMemory;
-	protected HashMap<String, Integer> currentIndexMap;
+	protected HashMap<String, Long> currentIndexMap;
 	protected ArrayList<AsyncFileWriter> pendingWriters;
 	protected HashMap<String, IDownloadEventListener> stateUpdaters;
 	protected DownloadItem parent;
@@ -208,7 +206,7 @@ class DashDownloader extends Thread {
     public void download() throws Exception {
 		downloadManifest();
 
-		if (conf.adaptationSets == 0) {
+		if (this.remoteManifest.adaptationSets.size() == 0) {
             dispose();
 			return;
 		}
@@ -270,16 +268,16 @@ class DashDownloader extends Thread {
     	return pendingWriters.size();
     }
     
-    public int getIndex(String hash) {
+    public long getIndex(AdaptationSet set, String hash) {
     	if(currentIndexMap.containsKey(hash)) {
     		return currentIndexMap.get(hash);	
     	}
-    	currentIndexMap.put(hash, FIRST_INDEX);
-    	return FIRST_INDEX;
+    	currentIndexMap.put(hash, set.startNumber);
+    	return set.startNumber;
     }
     
-    public void incIndex(String hash, int val) {
-    	int newV = val;
+    public void incIndex(String hash, long val) {
+    	long newV = val;
     	if(currentIndexMap.containsKey(hash)) {
     		newV = currentIndexMap.get(hash);
     		newV += val;
@@ -308,8 +306,8 @@ class DashDownloader extends Thread {
     }
     
     public boolean isEndOfStream() throws Exception {
-    	for (int i = 0; i < conf.eos.length; ++i) {
-    		if (conf.eos[i] == false) {
+    	for (Boolean eosState : conf.eos.values()) {
+    		if (eosState == false) {
     			return false;
     		}
     	}
@@ -358,9 +356,8 @@ class DashDownloader extends Thread {
 		return false;
     }
 
-	public void downloadManifestNew() throws Exception {
-		Manifest remoteManifest = new Manifest();
-
+	public void downloadManifest() throws Exception {
+		this.remoteManifest = new Manifest();
 		conf.reset();
 
 		URL u = new URL(conf.manifestUrl);
@@ -375,7 +372,7 @@ class DashDownloader extends Thread {
 
 		if (manifestFile.exists ()) {
 			String manifestContent = FileUtils.readFileToString(manifestFile, "UTF-8");
-			//String localManifestContent = "";
+
 			DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
 			domFactory.setNamespaceAware(true);
 			DocumentBuilder builder = domFactory.newDocumentBuilder();
@@ -387,65 +384,86 @@ class DashDownloader extends Thread {
 			NamedNodeMap mpdAttrs = mpdRoot.getAttributes();
 			Node mediaPresentationDurationNode = mpdAttrs.getNamedItem("mediaPresentationDuration");
 			String mediaPresentationDuration = mediaPresentationDurationNode.getNodeValue();
-			this.streamDuration = getDuration(mediaPresentationDuration);
 
-			System.out.println("Stream Duration: " + streamDuration);
+            remoteManifest.durationSeconds = getDuration(mediaPresentationDuration);
+
+			System.out.println("Stream Duration: " + remoteManifest.durationSeconds);
 
 			NodeList adaptationSets = (NodeList) xpath.compile(ADAPTATION_SET).evaluate(doc, XPathConstants.NODESET);
 
 			for (int i = 0; i < adaptationSets.getLength(); i++) {
-				AdaptationSet remoteAdaptationSet = new AdaptationSet();
-				String mimeType = "n/a";
-
 				Node set = adaptationSets.item(i);
+				AdaptationSet remoteAdaptationSet = new AdaptationSet();
+
+				String mimeType = set.getAttributes().getNamedItem("mimeType") != null ? set.getAttributes().getNamedItem("mimeType").getNodeValue() : null;
+				remoteAdaptationSet.lang = set.getAttributes().getNamedItem("lang") != null ? set.getAttributes().getNamedItem("lang").getNodeValue() : null;
+                remoteAdaptationSet.id = set.getAttributes().getNamedItem("id").getNodeValue();
 
 				if(set == null) continue;
 
-				NamedNodeMap setAttrs = set.getAttributes();
-				Node idNode = setAttrs.getNamedItem(ID);
-				NodeList children = set.getChildNodes();
-
+				NodeList setChildren = set.getChildNodes();
                 ArrayList<Track> remoteTracks = new ArrayList<>();
+                HashMap<String, Boolean> adaptationSetEos = new HashMap<>();
 
-				for (int k = 0; k < children.getLength(); k++) {
-					Node child = children.item(k);
-					if (child == null) {
+				for (int k = 0; k < setChildren.getLength(); k++) {
+					Node setChild = setChildren.item(k);
+					if (setChild == null) {
 						continue;
 					}
-					if (child.getNodeName().equals(SEGMENT_TEMPLATE)) {
-                        remoteAdaptationSet.id = child.getAttributes().getNamedItem("id").getNodeValue();
-                        remoteAdaptationSet.duration = Long.parseLong(child.getAttributes().getNamedItem(DURATION).getNodeValue());
-                        remoteAdaptationSet.startNumber = Long.parseLong(child.getAttributes().getNamedItem("startNumber").getNodeValue());
-                        remoteAdaptationSet.timescale = Long.parseLong(child.getAttributes().getNamedItem(TIMESCALE).getNodeValue());
-                        remoteAdaptationSet.initSegment = child.getAttributes().getNamedItem(INITIALIZATION).getNodeValue();
-                        remoteAdaptationSet.segmentTemplate = child.getAttributes().getNamedItem(MEDIA).getNodeValue();
+					if (setChild.getNodeName().equals(SEGMENT_TEMPLATE)) {
+                        remoteAdaptationSet.segmentDuration = Long.parseLong(setChild.getAttributes().getNamedItem(DURATION).getNodeValue());
+                        remoteAdaptationSet.startNumber = Long.parseLong(setChild.getAttributes().getNamedItem("startNumber").getNodeValue());
+                        remoteAdaptationSet.timescale = Long.parseLong(setChild.getAttributes().getNamedItem(TIMESCALE).getNodeValue());
+                        remoteAdaptationSet.initSegment = setChild.getAttributes().getNamedItem(INITIALIZATION) != null ? setChild.getAttributes().getNamedItem(INITIALIZATION).getNodeValue() : null;
+                        remoteAdaptationSet.segmentTemplate = setChild.getAttributes().getNamedItem(MEDIA).getNodeValue();
+                        remoteAdaptationSet.segmentDurationSeconds = remoteAdaptationSet.segmentDuration / remoteAdaptationSet.timescale;
+                        remoteAdaptationSet.segmentCount = (long) Math.ceil(((double) remoteManifest.durationSeconds) / remoteAdaptationSet.segmentDurationSeconds);
 					}
-					else if (child.getNodeName().equals(REPRESENTATION)) {
-                        String trackMimeType = child.getAttributes().getNamedItem("mimeType").getNodeValue();
-                        mimeType = trackMimeType;
+					else if (setChild.getNodeName().equals(REPRESENTATION)) {
+                        String trackMimeType = setChild.getAttributes().getNamedItem("mimeType") != null ? setChild.getAttributes().getNamedItem("mimeType").getNodeValue() : null;
+                        if (trackMimeType != null) {
+                            mimeType = trackMimeType;
+                        }
 
                         Track remoteTrack = null;
 
-                        if (trackMimeType.contains("video")) {
+                        if (mimeType.contains("video")) {
                             remoteTrack = new VideoTrack();
                         }
-                        else if (trackMimeType.contains("audio")) {
+                        else if (mimeType.contains("audio")) {
                             remoteTrack = new AudioTrack();
                         }
-                        else if (trackMimeType.contains("text")) {
+                        else if (mimeType.contains("text")) {
                             remoteTrack = new TextTrack();
                         }
 
-                        remoteTrack.id = child.getAttributes().getNamedItem("id").getNodeValue();
-                        remoteTrack.mimeType = trackMimeType;
-                        remoteTrack.bandwidth = Long.parseLong(child.getAttributes().getNamedItem("bandwidth").getNodeValue());
+                        if (remoteTrack == null) {
+                            continue;
+                        }
 
-						NodeList repChildren = child.getChildNodes();
+                        remoteTrack.id = setChild.getAttributes().getNamedItem("id").getNodeValue();
+                        remoteTrack.mimeType = trackMimeType;
+                        remoteTrack.bandwidth = Long.parseLong(setChild.getAttributes().getNamedItem("bandwidth").getNodeValue());
+
+						if (remoteTrack.bandwidth < this.conf.properties.getMinBitrate() || remoteTrack.bandwidth > this.conf.properties.getMaxBitrate()) {
+							set.removeChild(setChild);
+							continue;
+						}
+
+                        adaptationSetEos.put(remoteAdaptationSet.id + ":" + remoteTrack.id, false);
+
+						NodeList repChildren = setChild.getChildNodes();
 						for (int j=0; j < repChildren.getLength(); ++j) {
-							Node rChild = repChildren.item(j);
-							if(rChild.getNodeName().equals(BASE_URL)) {
-								String baseUrl = rChild.getTextContent();
+							Node repsentation = repChildren.item(j);
+							if (repsentation.getNodeName().equals(BASE_URL)) {
+								String baseUrl = repsentation.getTextContent();
                                 remoteTrack.baseUrl = baseUrl;
+
+								URL mediaGrab = new URL(baseUrl);
+								String host = mediaGrab.getHost();
+								String protocol = mediaGrab.getProtocol();
+								System.out.println("EMP HOST+PROTOCOL: " + protocol+"://"+host);
+								repsentation.setTextContent(baseUrl.replace(protocol+"://"+host+"", conf.folder));
 							}
 						}
 
@@ -453,25 +471,35 @@ class DashDownloader extends Thread {
 					}
 				}
 
-				if (mimeType.contains("video")) {
-					remoteAdaptationSet = new VideoAdaptationSet(remoteAdaptationSet);
-				}
-				else if (mimeType.contains("audio")) {
-					remoteAdaptationSet = new AudioAdaptationSet(remoteAdaptationSet);
-				}
-				else if (mimeType.contains("text")) {
-					remoteAdaptationSet = new TextAdaptationSet(remoteAdaptationSet);
+                remoteAdaptationSet.tracks = remoteTracks;
+
+				if (mimeType != null) {
+					if (mimeType.contains("video")) {
+						remoteAdaptationSet = new VideoAdaptationSet(remoteAdaptationSet);
+					}
+					else if (mimeType.contains("audio")) {
+						if (this.conf.properties.hasAudioLanguage (remoteAdaptationSet.lang) == false) {
+							set.getParentNode().removeChild(set);
+							continue;
+						}
+						remoteAdaptationSet = new AudioAdaptationSet(remoteAdaptationSet);
+					}
+					else if (mimeType.contains("text")) {
+						if (this.conf.properties.hasTextLanguage (remoteAdaptationSet.lang) == false) {
+							set.getParentNode().removeChild(set);
+							continue;
+						}
+						remoteAdaptationSet = new TextAdaptationSet(remoteAdaptationSet);
+					}
+					else {
+						remoteAdaptationSet = null;
+					}
 				}
 
-				remoteManifest.adaptationSets.add(remoteAdaptationSet);
-
-				//for (Integer bandwidth : bandwidthNodeMapper.keySet()) {
-				//	if(bandwidth < maxBandwidth) {
-				//		System.out.println("DashDownloader: removing unnecessary Representation bitrate - " + bandwidth);
-				//		Node nodeToRemove = bandwidthNodeMapper.get(bandwidth);
-				//		set.removeChild(nodeToRemove);
-				//	}
-				//}
+				if (remoteAdaptationSet != null) {
+					remoteManifest.adaptationSets.add(remoteAdaptationSet);
+                    this.conf.eos.putAll(adaptationSetEos);
+				}
 			}
 
 			File manifestLocal = new File(conf.folder + "/manifest_local.mpd");
@@ -479,6 +507,7 @@ class DashDownloader extends Thread {
 		}
 	}
 
+/*
     public void downloadManifest() throws Exception {
         conf.reset();
         
@@ -536,11 +565,11 @@ class DashDownloader extends Thread {
     	    		if (child.getNodeName().equals(SEGMENT_TEMPLATE)) {
     	    			String media = child.getAttributes().getNamedItem(MEDIA).getNodeValue();
     	    			String init = child.getAttributes().getNamedItem(INITIALIZATION).getNodeValue();   
-    	    			int duration = Integer.parseInt(child.getAttributes().getNamedItem(DURATION).getNodeValue());
+    	    			int segmentDuration = Integer.parseInt(child.getAttributes().getNamedItem(DURATION).getNodeValue());
     	    			int timescale = Integer.parseInt(child.getAttributes().getNamedItem(TIMESCALE).getNodeValue());
         	    		conf.segmentUrl[currentSetIdx] = media;
         	    		conf.initUrl[currentSetIdx] = init;
-        	    		conf.segmentDurations[currentSetIdx] = duration/timescale;
+        	    		conf.segmentDurations[currentSetIdx] = segmentDuration/timescale;
         	    		conf.segmentCount[currentSetIdx] = (int) Math.ceil(((double) streamDuration)/conf.segmentDurations[currentSetIdx]);
 					}
     	    		else if (child.getNodeName().equals(REPRESENTATION)) {
@@ -583,10 +612,11 @@ class DashDownloader extends Thread {
 			FileUtils.writeByteArrayToFile(manifestLocal, getStringFromDocument(doc).getBytes());
         }  
     }
+*/
 
-    public void determineInitialChunkIndex(String indexId, String urlRaw, String destFilePath) {
-        int chunkIndex = getIndex(indexId);
-        if (chunkIndex == FIRST_INDEX) {
+    public void determineInitialChunkIndex(AdaptationSet adaptationSet, String indexId, String urlRaw, String destFilePath) {
+        long chunkIndex = getIndex(adaptationSet, indexId);
+        if (chunkIndex == adaptationSet.startNumber) {
             String fileNamePath = null;
             try {
                 fileNamePath = new URL(urlRaw).getFile().replace("$Number$", "*");
@@ -595,13 +625,15 @@ class DashDownloader extends Thread {
                 FileFilter fileFilter = new WildcardFileFilter(fileWildcard);
                 File[] alreadyPresent = destFile.getParentFile().listFiles(fileFilter);
                 HashMap<String, Object> memory = new HashMap<>();
-                for(File f : alreadyPresent) {
-                    memory.put(f.getName(), null);
+                if (alreadyPresent != null) {
+                    for(File f : alreadyPresent) {
+                        memory.put(f.getName(), null);
+                    }
                 }
-                for (int i = FIRST_INDEX; i < Integer.MAX_VALUE; ++i) {
-                    String fToCheck = new URL(urlRaw).getFile().replace("$Number$", Integer.toString(i));
+                for (long i = adaptationSet.startNumber; i < Integer.MAX_VALUE; ++i) {
+                    String fToCheck = new URL(urlRaw).getFile().replace("$Number$", Long.toString(i));
                     if (memory.containsKey(new File(fToCheck).getName()) == false) {
-                        incIndex(indexId, i - FIRST_INDEX);
+                        incIndex(indexId, i - adaptationSet.startNumber);
                         break;
                     }
                 }
@@ -612,7 +644,96 @@ class DashDownloader extends Thread {
         }
     }
 
-    public boolean downloadSegments () throws Exception {	
+    public boolean downloadSegments () throws Exception {
+        while (this.pendingWriters.size() > MAX_CONCURRENT_DOWNLOADS) {
+            ArrayList<AsyncFileWriter> toRemove = new ArrayList<>();
+            for(AsyncFileWriter ifw : this.pendingWriters) {
+                if(ifw.error) {
+                    notifyUpdatersError(ErrorCodes.DOWNLOAD_SEGMENT_FAILED, "Failed to download media segment.");
+                    dispose();
+                    return false;
+                }
+                if(ifw.finished) {
+                    toRemove.add(ifw);
+                }
+            }
+            this.pendingWriters.removeAll(toRemove);
+            if(isEndOfStream()) {
+                return true;
+            }
+            Thread.sleep(5);
+        }
+
+        ArrayList<AsyncFileWriter> writers = new ArrayList<>();
+        HashMap<String, String> tmpFiles = new HashMap<>();
+
+        for (int i = 0; i < this.remoteManifest.adaptationSets.size(); i++) {
+            AdaptationSet adaptationSet = this.remoteManifest.adaptationSets.get(i);
+            String segmentTemplate = adaptationSet.segmentTemplate;
+
+            for (int j = 0; j < adaptationSet.tracks.size(); ++j) {
+                Track track = adaptationSet.tracks.get(j);
+                String urlRaw = track.baseUrl + segmentTemplate.replace ("$RepresentationID$", track.id);
+                String overallId = adaptationSet.id + ":" + track.id;
+
+                determineInitialChunkIndex(adaptationSet, overallId, urlRaw, conf.folder);
+
+                long chunkIndex = getIndex(adaptationSet, overallId);
+                final String chunkIndexStr = Long.toString(chunkIndex);
+
+                conf.currentSegment.put(overallId, chunkIndex);
+
+                if (adaptationSet.segmentCount > 0) {
+                    double totalChunks = 0, totalCurrent = 0;
+                    for (int k = 0; k < remoteManifest.adaptationSets.size(); ++k) {
+                        AdaptationSet counterSet = this.remoteManifest.adaptationSets.get(k);
+                        totalChunks  += counterSet.segmentCount * counterSet.tracks.size();
+                        for (int l = 0; l < counterSet.tracks.size(); ++l) {
+                            Track counterTrack = counterSet.tracks.get(l);
+                            String counterKey = counterSet.id + ":" + counterTrack.id;
+                            totalCurrent += conf.currentSegment.containsKey(counterKey) ? conf.currentSegment.get(counterKey) - 1 : 0;
+                        }
+                    }
+                    notifyUpdatersProgress(Math.round(totalCurrent * 100.0 / totalChunks));
+                }
+
+                if (chunkIndex > adaptationSet.segmentCount) {
+                    conf.eos.put(overallId, true);
+                    continue;
+                }
+
+                final String url = urlRaw.replace("$Number$", chunkIndexStr);
+
+                String fileName = new URL(url).getFile();
+                String destFilePath = conf.folder + fileName;
+
+                boolean contains = this.chunkMemory.containsKey(destFilePath);
+
+                if (contains == false) {
+                    System.out.println("Chunk: " + destFilePath);
+
+                    this.chunkMemory.put(destFilePath, destFilePath);
+
+                    tmpFiles.put(track.id, destFilePath);
+                    AsyncFileWriter ifw = new AsyncFileWriter(this, url, destFilePath, track.id, chunkIndexStr);
+                    writers.add(ifw);
+                    ifw.start();
+
+                    incIndex(overallId, 1);
+                }
+
+                j++;
+            }
+        }
+
+        for(AsyncFileWriter ifw : writers) {
+            addWriter(ifw);
+        }
+
+        return true;
+    }
+
+    /*public boolean downloadSegments () throws Exception {
     	while (this.pendingWriters.size() > MAX_CONCURRENT_DOWNLOADS) {
 			ArrayList<AsyncFileWriter> toRemove = new ArrayList<>();
 			for(AsyncFileWriter ifw : this.pendingWriters) {
@@ -696,15 +817,20 @@ class DashDownloader extends Thread {
         }
         
         return true;
-    }
+    }*/
     
 
     public boolean downloadStreamInit () throws Exception {
-    	ArrayList<AsyncFileWriter> writers = new ArrayList<AsyncFileWriter>();
-        for (int i = 0;i < conf.adaptationSets; i++) {
-            String initUrl = conf.initUrl[i];
-            for (String id : conf.representationIds[i].ids.values ()) {
-            	String url = conf.baseUrls[i] + initUrl.replace ("$RepresentationID$", id);
+    	ArrayList<AsyncFileWriter> writers = new ArrayList<>();
+        for (int i = 0; i < this.remoteManifest.adaptationSets.size(); i++) {
+            AdaptationSet adaptationSet = this.remoteManifest.adaptationSets.get(i);
+            String initUrl = adaptationSet.initSegment;
+            if(initUrl == null) {
+                continue;
+            }
+            for (int j = 0; j < adaptationSet.tracks.size(); ++j) {
+                Track track = adaptationSet.tracks.get(j);
+            	String url = track.baseUrl + initUrl.replace ("$RepresentationID$", track.id);
             	String destFilePath = conf.folder + new URL(url).getFile();
             	AsyncFileWriter ifw = new AsyncFileWriter(this, url, destFilePath, "", "INIT");
                 writers.add(ifw);
@@ -712,7 +838,7 @@ class DashDownloader extends Thread {
             }
         }
         
-        for(AsyncFileWriter ifw : writers) {
+        for (AsyncFileWriter ifw : writers) {
         	ifw.join();
 			if (ifw.error()) {
 				notifyUpdatersError(ErrorCodes.DOWNLOAD_INIT_CHUNK_FAILED, "Failed to download initialization chunk.");
@@ -772,6 +898,9 @@ class DashDownloader extends Thread {
 	    		URL url = new URL (this.url);
 				File dest_file = new File (this.destFile);
 				Log.d("EMP2 FILE PATH", this.destFile);
+                if (dest_file.getParentFile().exists() == false) {
+                    dest_file.getParentFile().mkdirs();
+                }
 				if (dest_file.exists () == false) {
 	                FileUtils.copyURLToFile (url, dest_file, MAX_HTTP_CONNECTION_TIMEOUT, MAX_SEGMENT_DOWNLOAD_TIMEOUT);
 	            }
@@ -826,27 +955,14 @@ class DashDownloader extends Thread {
     }
     
     private class Configuration {
-    	private final int MAX_ADAPTATION_SETS = 2;
-        
         String manifestUrl = null;
-        
-        String[] segmentUrl = new String[MAX_ADAPTATION_SETS];
-        String[] initUrl = new String[MAX_ADAPTATION_SETS];
-        String[] baseUrls = new String[MAX_ADAPTATION_SETS];
-        
-        int[] segmentDurations = new int[MAX_ADAPTATION_SETS];
-        int[] segmentCount = new int[MAX_ADAPTATION_SETS];
-		int[] segmentCurrent = new int[MAX_ADAPTATION_SETS];
-        boolean[] eos = new boolean[MAX_ADAPTATION_SETS];
-        
-        Reps[] representationIds = new Reps[MAX_ADAPTATION_SETS];
-        
+        HashMap<String, Long> currentSegment;
+        HashMap<String, Boolean> eos;
+		DownloadProperties properties;
         String folder = null;
-        
-        int adaptationSets = 0;
             
         public Configuration(String manifestUrl, String destFolder) {
-            //this.folder = destFolder + UUID.randomUUID().toString().substring(0, 5).replaceAll("-", "");
+            this.properties = new DownloadProperties();
 			this.folder = destFolder;
             this.manifestUrl = manifestUrl;
 			File destFolderTest = new File(this.folder);
@@ -855,31 +971,9 @@ class DashDownloader extends Thread {
 			}
         }
 
-        int createAdaptationSet(String i) {
-            if ("0".equals(i)){
-            	// video
-            	adaptationSets++;
-                return 0;
-            }
-            else {
-            	// audio
-                adaptationSets++;
-                return 1;
-            }
-        }
-
         void reset() {
-            this.segmentUrl = new String[MAX_ADAPTATION_SETS];
-            this.initUrl = new String[MAX_ADAPTATION_SETS];
-            this.representationIds = new Reps[MAX_ADAPTATION_SETS];
-            for (int i = 0; i < MAX_ADAPTATION_SETS; ++i) {
-            	this.representationIds[i] = new Reps();
-            }
-            this.adaptationSets = 0;
-        }
-
-        public class Reps {
-             public Map<Integer,String> ids = new HashMap<Integer, String>();
+            eos = new HashMap<>();
+            currentSegment = new HashMap<>();
         }
     }
     

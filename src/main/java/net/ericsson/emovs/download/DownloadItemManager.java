@@ -292,7 +292,7 @@ public class DownloadItemManager {
         saveJsonSummary();
         long elapsedTime = System.currentTimeMillis() - currentMillis;
 
-        Log.d(TAG, "Summary serialization duration: " + elapsedTime + "ms");
+        Log.d(TAG, "Summary serialization segmentDuration: " + elapsedTime + "ms");
     }
 
     /**
@@ -343,7 +343,7 @@ public class DownloadItemManager {
             summary = new HashMap<>();
         }
         long elapsedTime = System.currentTimeMillis() - currentMillis;
-        Log.d(TAG, "Sync duration: " + elapsedTime + "ms, items: " + (summary == null ? 0 : summary.size()));
+        Log.d(TAG, "Sync segmentDuration: " + elapsedTime + "ms, items: " + (summary == null ? 0 : summary.size()));
     }
 
     public void syncWithStorageSerialized() {
@@ -369,7 +369,7 @@ public class DownloadItemManager {
             summary = new HashMap<>();
         }
         long elapsedTime = System.currentTimeMillis() - currentMillis;
-        Log.d(TAG, "Sync duration: " + elapsedTime + "ms, items: " + (summary == null ? 0 : summary.size()));
+        Log.d(TAG, "Sync segmentDuration: " + elapsedTime + "ms, items: " + (summary == null ? 0 : summary.size()));
     }
 
     private void syncWithStorageSlow() {
@@ -418,6 +418,6 @@ public class DownloadItemManager {
         FileSerializer.write(summary, summaryFile.getAbsolutePath());
 
         long elapsedTime = System.currentTimeMillis() - currentMillis;
-        Log.d(TAG, "Sync duration: " + elapsedTime + "ms, items: " + assets.length);
+        Log.d(TAG, "Sync segmentDuration: " + elapsedTime + "ms, items: " + assets.length);
     }
 }
