@@ -52,14 +52,14 @@ public class DashDownloaderTest {
         Assert.assertTrue(DownloadItemManager.DOWNLOAD_BASE_PATH != null);
         Assert.assertTrue(manager.count(DownloadItem.State.COMPLETED) == 0);
 
-        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), asset);
+        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), asset, DownloadProperties.DEFAULT);
         DashDownloader downloader = new DashDownloader(item);
 
         Assert.assertFalse(downloader.isAlive());
         Assert.assertTrue(downloader.parent == item);
         Assert.assertTrue(downloader.errorMessage == null);
 
-        downloader.init("https://psempdash.ebsd.ericsson.net/dash/DevGroup/EnigmaTV/5ff06bc9-dd05-4009-b002-29e51be5760e_enigma/5ff06bc9-dd05-4009-b002-29e51be5760e_enigma/vod.mpd", getExternalStorageDirectory().getPath());
+        downloader.init("https://psempdash.ebsd.ericsson.net/dash/DevGroup/EnigmaTV/5ff06bc9-dd05-4009-b002-29e51be5760e_enigma/5ff06bc9-dd05-4009-b002-29e51be5760e_enigma/vod.mpd", getExternalStorageDirectory().getPath(), DownloadProperties.DEFAULT);
         Assert.assertTrue(downloader.conf != null);
         Assert.assertFalse(downloader.isInterrupted());
     }
@@ -76,14 +76,14 @@ public class DashDownloaderTest {
         Assert.assertTrue(DownloadItemManager.DOWNLOAD_BASE_PATH != null);
         Assert.assertTrue(manager.count(DownloadItem.State.COMPLETED) == 0);
 
-        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), asset);
+        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), asset, DownloadProperties.DEFAULT);
         DashDownloader downloader = new DashDownloader(item);
 
         Assert.assertFalse(downloader.isAlive());
         Assert.assertTrue(downloader.parent == item);
         Assert.assertTrue(downloader.errorMessage == null);
 
-        downloader.init("https://psempdash.ebsd.ericsson.net/dash/DevGroup/EnigmaTV/peterz_test1_enigma/peterz_test1_enigma/vod.mpd?ownerId=devgroup&userToken=9f0b9603-7df4-49ef-982f-3e78c45eabaa&clientIp=192.36.29.123&signedAssetId=peterz_test1_enigma&playToken=CghkZXZncm91cBITcGV0ZXJ6X3Rlc3QxX2VuaWdtYRoNMTkyLjM2LjI5LjEyMyIkOWYwYjk2MDMtN2RmNC00OWVmLTk4MmYtM2U3OGM0NWVhYmFhKMXnwN75KzIAOgRGVk9EQghFbmlnbWFUVkoA%7Cx6BPfweXNpKQhWMw4B4JbxjFbFElx4Tpq85By2AnS%2BE%3D", getExternalStorageDirectory().getPath());
+        downloader.init("https://psempdash.ebsd.ericsson.net/dash/DevGroup/EnigmaTV/peterz_test1_enigma/peterz_test1_enigma/vod.mpd?ownerId=devgroup&userToken=9f0b9603-7df4-49ef-982f-3e78c45eabaa&clientIp=192.36.29.123&signedAssetId=peterz_test1_enigma&playToken=CghkZXZncm91cBITcGV0ZXJ6X3Rlc3QxX2VuaWdtYRoNMTkyLjM2LjI5LjEyMyIkOWYwYjk2MDMtN2RmNC00OWVmLTk4MmYtM2U3OGM0NWVhYmFhKMXnwN75KzIAOgRGVk9EQghFbmlnbWFUVkoA%7Cx6BPfweXNpKQhWMw4B4JbxjFbFElx4Tpq85By2AnS%2BE%3D", getExternalStorageDirectory().getPath(), DownloadProperties.DEFAULT);
 
         Assert.assertTrue(downloader.conf != null);
         Assert.assertFalse(downloader.isInterrupted());
@@ -106,14 +106,14 @@ public class DashDownloaderTest {
         Assert.assertTrue(DownloadItemManager.DOWNLOAD_BASE_PATH != null);
         Assert.assertTrue(manager.count(DownloadItem.State.COMPLETED) == 0);
 
-        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), asset);
+        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), asset, DownloadProperties.DEFAULT);
         DashDownloader downloader = new DashDownloader(item);
 
         Assert.assertFalse(downloader.isAlive());
         Assert.assertTrue(downloader.parent == item);
         Assert.assertTrue(downloader.errorMessage == null);
 
-        downloader.init("https://my.wrong.manifest/vod.mpd", getExternalStorageDirectory().getPath());
+        downloader.init("https://my.wrong.manifest/vod.mpd", getExternalStorageDirectory().getPath(), DownloadProperties.DEFAULT);
         Assert.assertTrue(downloader.conf != null);
         Assert.assertFalse(downloader.isInterrupted());
 

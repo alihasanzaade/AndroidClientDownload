@@ -43,9 +43,9 @@ public class DownloadItemManagerTest {
         EmpAsset asset = new EmpAsset();
         asset.assetId = "test_12345";
 
-        manager.createItem(asset);
+        manager.createItem(asset, DownloadProperties.DEFAULT);
         Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 1);
-        manager.createItem(asset);
+        manager.createItem(asset, DownloadProperties.DEFAULT);
         Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 1);
         ArrayList<IDownload> downloads = manager.getDownloads(DownloadItem.State.QUEUED);
         Assert.assertTrue(downloads.size() == 1 && downloads.get(0).getOnlinePlayable().getId() == asset.getId());
@@ -61,7 +61,7 @@ public class DownloadItemManagerTest {
         EmpAsset asset = new EmpAsset();
         asset.assetId = "test_12345";
 
-        manager.createItem(asset);
+        manager.createItem(asset, DownloadProperties.DEFAULT);
         Assert.assertTrue(manager.canStartNewDownload());
     }
 
@@ -75,9 +75,9 @@ public class DownloadItemManagerTest {
         EmpAsset asset = new EmpAsset();
         asset.assetId = "test_12345";
 
-        manager.createItem(asset);
+        manager.createItem(asset, DownloadProperties.DEFAULT);
         Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 1);
-        manager.createItem(asset);
+        manager.createItem(asset, DownloadProperties.DEFAULT);
         Assert.assertTrue(manager.count(DownloadItem.State.QUEUED) == 1);
         ArrayList<IDownload> downloads = manager.getDownloads(DownloadItem.State.QUEUED);
         Assert.assertTrue(downloads.size() == 1 && downloads.get(0).getOnlinePlayable().getId() == asset.getId());

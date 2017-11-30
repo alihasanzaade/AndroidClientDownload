@@ -64,11 +64,11 @@ public class DownloadItemManager {
      * @param playable
      * @return
      */
-    public boolean createItem(IPlayable playable) {
+    public boolean createItem(IPlayable playable, DownloadProperties properties) {
         if (this.downloadItems.containsKey(playable.getId())) {
             return false;
         }
-        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), playable);
+        DownloadItem item = new DownloadItem(EMPRegistry.applicationContext(), playable, properties);
         this.downloadItems.put(playable.getId(), item);
         return true;
     }
@@ -252,6 +252,7 @@ public class DownloadItemManager {
                 infoJson.put("uuid", info.uuid.toString());
                 infoJson.put("online", info.onlinePlayable.getJson());
                 infoJson.put("offline", info.offlinePlayable == null ? null : info.offlinePlayable.getJson());
+                infoJson.put("properties", info.properties == null ? null : info.properties.getJson());
                 summaryJson.put(infoJson);
 
             } catch (JSONException e) {
@@ -317,6 +318,8 @@ public class DownloadItemManager {
                     info.progress = infoJson.optDouble("progress", 0.0);
                     info.downloadedBytes = infoJson.optLong("downloadedBytes", 0);
                     info.uuid = UUID.fromString(infoJson.optString("uuid", UUID.randomUUID().toString()));
+                    info.properties = new DownloadProperties();
+                    info.properties.fromJson(infoJson.optJSONObject("properties"));
 
                     EmpAsset onlineAsset = new EmpAsset();
                     onlineAsset = assetBuilder.getAsset(infoJson.optJSONObject("online"), onlineAsset, false);

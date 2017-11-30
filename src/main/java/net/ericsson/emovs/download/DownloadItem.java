@@ -65,6 +65,7 @@ public class DownloadItem implements IDownload {
     private Entitlement entitlement;
     private String downloadPath;
     private long downloadedSize;
+    private DownloadProperties properties;
 
     Context app;
     SharedPropertiesICredentialsStorage credentialsStorage;
@@ -82,6 +83,7 @@ public class DownloadItem implements IDownload {
         this.offlinePlayable = info.offlinePlayable;
         this.onlinePlayable = info.onlinePlayable;
         this.downloadedSize = info.downloadedBytes;
+        this.properties = info.properties;
         if (state == State.DOWNLOADING || state == State.PAUSED || downloadedSize == 0) {
             new RunnableThread(new Runnable() {
                 @Override
@@ -98,13 +100,14 @@ public class DownloadItem implements IDownload {
         setAnalytics();
     }
 
-    public DownloadItem(Context app, IPlayable onlinePlayable) {
+    public DownloadItem(Context app, IPlayable onlinePlayable, DownloadProperties properties) {
         this.app = app;
         this.uuid = UUID.randomUUID();
         this.credentialsStorage = SharedPropertiesICredentialsStorage.getInstance();
         this.downloaderWorker = new DashDownloader(this);
         this.onlinePlayable = onlinePlayable;
         this.downloadPath = DownloadItemManager.DOWNLOAD_BASE_PATH + onlinePlayable.getId();
+        this.properties = properties;
         setAnalytics();
         setState(State.QUEUED);
     }
@@ -228,7 +231,7 @@ public class DownloadItem implements IDownload {
             }
             this.downloaderWorker = new DashDownloader(this.downloaderWorker);
         }
-        this.downloaderWorker.init(entitlement.mediaLocator, downloadFolder);
+        this.downloaderWorker.init(entitlement.mediaLocator, downloadFolder, this.properties);
         if (callback != null) {
             this.downloaderWorker.setCallback("SINGLE_DOWNLOAD_ACTIVITY_CALLBACK", callback);
         }
@@ -289,6 +292,7 @@ public class DownloadItem implements IDownload {
         info.state = this.state;
         info.uuid = this.uuid;
         info.downloadedBytes = this.downloadedSize;
+        info.properties = this.properties;
         FileSerializer.write(info, new File(this.downloadPath, "info.ser").getAbsolutePath());
         DownloadItemManager.updateSummary(info.onlinePlayable.getId(), info);
     }

@@ -40,8 +40,8 @@ public class EMPDownloadProvider {
      * @param playable
      * @throws Exception
      */
-    public void add(IPlayable playable) throws Exception {
-        boolean ret = DownloadItemManager.getInstance().createItem(playable);
+    public void add(IPlayable playable, DownloadProperties properties) throws Exception {
+        boolean ret = DownloadItemManager.getInstance().createItem(playable, properties);
         if (ret) {
             startService();
         }
@@ -111,15 +111,17 @@ public class EMPDownloadProvider {
      *
      * @throws Exception
      */
-    public void startService() throws Exception {
+    public boolean startService() {
         if (EMPRegistry.applicationContext() == null) {
-            throw  new Exception("APP_NOT_BOUND_TO_DOWNLOADER_PROVIDER");
+            return false;
         }
         if (isDownloadServiceRunning() == false) {
             this.downloadServiceIntent = new Intent(EMPRegistry.applicationContext(), EMPDownloadService.class);
             this.downloadServiceIntent.setAction(EMPDownloadService.class.getName());
             EMPRegistry.applicationContext().startService(downloadServiceIntent);
+            return true;
         }
+        return false;
     }
 
     /**

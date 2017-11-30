@@ -18,4 +18,5 @@ public class DownloadInfo implements Serializable {
     UUID uuid;
     IPlayable onlinePlayable;
     EmpOfflineAsset offlinePlayable;
+    DownloadProperties properties;
 }

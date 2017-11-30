@@ -94,8 +94,8 @@ class DashDownloader extends Thread {
 		this.parent = other.parent;
 	}
 
-	public void init(String manifestUrl, String destFolder) {
-		this.conf = new Configuration(manifestUrl, destFolder);
+	public void init(String manifestUrl, String destFolder, DownloadProperties properties) {
+		this.conf = new Configuration(manifestUrl, destFolder, properties);
 	}
 
 	public void setCallback(String key, IDownloadEventListener callback) {
@@ -445,10 +445,14 @@ class DashDownloader extends Thread {
                         remoteTrack.mimeType = trackMimeType;
                         remoteTrack.bandwidth = Long.parseLong(setChild.getAttributes().getNamedItem("bandwidth").getNodeValue());
 
-						if (remoteTrack.bandwidth < this.conf.properties.getMinBitrate() || remoteTrack.bandwidth > this.conf.properties.getMaxBitrate()) {
+						if (remoteTrack instanceof  AudioTrack && (remoteTrack.bandwidth < this.conf.properties.getMinAudioBitrate() || remoteTrack.bandwidth > this.conf.properties.getMaxAudioBitrate())) {
 							set.removeChild(setChild);
 							continue;
 						}
+                        else if (remoteTrack instanceof VideoTrack && (remoteTrack.bandwidth < this.conf.properties.getMinVideoBitrate() || remoteTrack.bandwidth > this.conf.properties.getMaxVideoBitrate())) {
+                            set.removeChild(setChild);
+                            continue;
+                        }
 
                         adaptationSetEos.put(remoteAdaptationSet.id + ":" + remoteTrack.id, false);
 
@@ -961,8 +965,8 @@ class DashDownloader extends Thread {
 		DownloadProperties properties;
         String folder = null;
             
-        public Configuration(String manifestUrl, String destFolder) {
-            this.properties = new DownloadProperties();
+        public Configuration(String manifestUrl, String destFolder, DownloadProperties properties) {
+            this.properties = properties;
 			this.folder = destFolder;
             this.manifestUrl = manifestUrl;
 			File destFolderTest = new File(this.folder);
