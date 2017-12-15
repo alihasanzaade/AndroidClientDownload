@@ -1,7 +1,7 @@
 package net.ericsson.emovs.download;
 
+import android.app.Activity;
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 
 import net.ericsson.emovs.utilities.models.EmpAsset;
 import net.ericsson.emovs.utilities.emp.EMPRegistry;
@@ -9,6 +9,9 @@ import net.ericsson.emovs.utilities.emp.EMPRegistry;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 
 
 import static android.os.Environment.getExternalStorageDirectory;
@@ -25,7 +28,7 @@ import static android.os.Environment.getExternalStorageDirectory;
  * THE PRODUCT.
  */
 
-//@RunWith(AndroidJUnit4.class)
+@RunWith(RobolectricTestRunner.class)
 public class DashDownloaderTest {
 
     //@Rule
@@ -43,7 +46,9 @@ public class DashDownloaderTest {
 
     @Test
     public void initTest() throws Exception {
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        Activity activity = Robolectric.setupActivity(Activity.class);
+        Context appContext = activity.getApplicationContext();
+
         EMPRegistry.bindApplicationContext(appContext);
         EmpAsset asset = new EmpAsset();
         asset.assetId = "test_12345";
@@ -67,7 +72,9 @@ public class DashDownloaderTest {
     @Test
     public void downloadSuccessTest() throws Exception {
         // TODO: find a way to store a static dash vod in azure a download that asset & give storage permission to android
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        Activity activity = Robolectric.setupActivity(Activity.class);
+        Context appContext = activity.getApplicationContext();
+
         EMPRegistry.bindApplicationContext(appContext);
         EmpAsset asset = new EmpAsset();
         asset.assetId = "test_12345";
@@ -97,7 +104,9 @@ public class DashDownloaderTest {
 
     @Test
     public void downloadErrorDownloadingManifestTest() throws Exception {
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        Activity activity = Robolectric.setupActivity(Activity.class);
+        Context appContext = activity.getApplicationContext();
+
         EMPRegistry.bindApplicationContext(appContext);
         EmpAsset asset = new EmpAsset();
         asset.assetId = "test_12345";

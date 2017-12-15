@@ -114,9 +114,16 @@ public class DownloadProperties implements Serializable {
             props.put("maxAudioBitrate", maxAudioBitrate);
             props.put("minVideoBitrate", minVideoBitrate);
             props.put("maxVideoBitrate", maxVideoBitrate);
-            props.put("selectedAudioLanguages", new JSONArray(selectedAudioLanguages));
-            props.put("selectedTextLanguages",  new JSONArray(selectedTextLanguages));
-        } catch (JSONException e) {
+
+            if (selectedAudioLanguages != null) {
+                props.put("selectedAudioLanguages", new JSONArray(selectedAudioLanguages));
+            }
+
+            if (selectedTextLanguages != null) {
+                props.put("selectedTextLanguages",  new JSONArray(selectedTextLanguages));
+            }
+        }
+        catch (JSONException e) {
             e.printStackTrace();
         }
         return props;
