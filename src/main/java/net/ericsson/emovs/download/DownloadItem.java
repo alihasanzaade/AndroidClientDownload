@@ -18,6 +18,7 @@ import net.ericsson.emovs.utilities.entitlements.Entitlement;
 import net.ericsson.emovs.utilities.errors.ErrorCodes;
 import net.ericsson.emovs.utilities.errors.ErrorRunnable;
 import net.ericsson.emovs.utilities.system.FileSerializer;
+import net.ericsson.emovs.utilities.system.ParameterizedRunnable;
 import net.ericsson.emovs.utilities.system.RunnableThread;
 
 import net.ericsson.emovs.download.interfaces.IDownload;
@@ -205,23 +206,27 @@ public class DownloadItem implements IDownload {
         saveDownloadInfo();
     }
 
-    private void downloadLicense(String mediaId, String manifestUrl, String playToken) {
-        Pair<String, String> licenseDetails = DashLicenseDetails.getLicenseDetails(manifestUrl, false);
-        if (licenseDetails == null) {
-            return;
-        }
-        WidevineDownloadLicenseManager downloader = new WidevineDownloadLicenseManager(EMPRegistry.applicationContext());
+    private void downloadLicense(final String mediaId, String manifestUrl, final String playToken) {
+        DashLicenseDetails.getLicenseDetails(manifestUrl, false, new ParameterizedRunnable<Pair<String, String>>() {
+            @Override
+            public void run(Pair<String, String> licenseDetails) {
+                if (licenseDetails == null) {
+                    return;
+                }
+                WidevineDownloadLicenseManager downloader = new WidevineDownloadLicenseManager(EMPRegistry.applicationContext());
 
-        String licenseWithToken = Uri.parse(licenseDetails.first)
-                .buildUpon()
-                .appendQueryParameter("token", "Bearer " + playToken)
-                .build().toString();
-        licenseDetails = new Pair<>(licenseWithToken, licenseDetails.second);
+                String licenseWithToken = Uri.parse(licenseDetails.first)
+                        .buildUpon()
+                        .appendQueryParameter("token", "Bearer " + playToken)
+                        .build().toString();
+                licenseDetails = new Pair<>(licenseWithToken, licenseDetails.second);
 
-        byte[] license = downloader.download(licenseDetails.first, licenseDetails.second);
-        if(license != null) {
-            downloader.store(mediaId, license);
-        }
+                byte[] license = downloader.download(licenseDetails.first, licenseDetails.second);
+                if(license != null) {
+                    downloader.store(mediaId, license);
+                }
+            }
+        });
     }
 
     private void downloadMedia(String downloadFolder, Entitlement entitlement, final IDownloadEventListener callback) {
