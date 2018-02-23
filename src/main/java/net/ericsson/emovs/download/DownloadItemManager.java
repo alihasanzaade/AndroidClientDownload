@@ -3,7 +3,7 @@ package net.ericsson.emovs.download;
 import android.util.Log;
 
 import net.ericsson.emovs.utilities.interfaces.IPlayable;
-import net.ericsson.emovs.exposure.metadata.builders.EmpBaseBuilder;
+import net.ericsson.emovs.utilities.metadata.EmpBaseBuilder;
 import net.ericsson.emovs.utilities.models.EmpAsset;
 import net.ericsson.emovs.utilities.models.EmpOfflineAsset;
 import net.ericsson.emovs.utilities.system.FileSerializer;
