@@ -8,7 +8,7 @@ import android.util.Pair;
 import net.ericsson.emovs.download.drm.WidevineDownloadLicenseManager;
 import net.ericsson.emovs.exposure.auth.SharedPropertiesICredentialsStorage;
 import net.ericsson.emovs.exposure.entitlements.EMPEntitlementProvider;
-import net.ericsson.emovs.utilities.drm.DashLicenseDetails;
+import net.ericsson.emovs.utilities.drm.DashDetails;
 import net.ericsson.emovs.utilities.entitlements.EntitledRunnable;
 import net.ericsson.emovs.utilities.entitlements.EntitlementCallback;
 import net.ericsson.emovs.utilities.interfaces.IPlayable;
@@ -26,21 +26,9 @@ import net.ericsson.emovs.download.interfaces.IDownloadEventListener;
 import net.ericsson.emovs.utilities.emp.EMPRegistry;
 
 import org.apache.commons.io.FileUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.net.URL;
 import java.util.UUID;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 
 /**
  * Created by Joao Coelho on 2017-09-06.
@@ -207,7 +195,7 @@ public class DownloadItem implements IDownload {
     }
 
     private void downloadLicense(final String mediaId, String manifestUrl, final String playToken) {
-        DashLicenseDetails.getLicenseDetails(manifestUrl, false, new ParameterizedRunnable<Pair<String, String>>() {
+        DashDetails.getLicenseDetails(manifestUrl, false, new ParameterizedRunnable<Pair<String, String>>() {
             @Override
             public void run(Pair<String, String> licenseDetails) {
                 if (licenseDetails == null) {
