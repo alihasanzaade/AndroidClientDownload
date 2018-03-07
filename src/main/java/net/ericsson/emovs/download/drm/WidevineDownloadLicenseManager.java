@@ -60,11 +60,12 @@ public class WidevineDownloadLicenseManager {
         }
 
         try {
-            GenericDrmCallback customDrmCallback = new GenericDrmCallback(buildHttpDataSourceFactory(true), licenseUrl);
-            OfflineLicenseHelper offlineLicenseHelper = OfflineLicenseHelper.newWidevineInstance(customDrmCallback, null);
+            // GenericDrmCallback customDrmCallback = new GenericDrmCallback(buildHttpDataSourceFactory(true), licenseUrl);
+            OfflineLicenseHelper offlineLicenseHelper = OfflineLicenseHelper.newWidevineInstance(licenseUrl, buildHttpDataSourceFactory(true));
 
             byte[] initData = Base64.decode(initDataBase64, Base64.DEFAULT);
-            byte[] offlineAssetKeyId = offlineLicenseHelper.downloadLicense(new DrmInitData(new DrmInitData.SchemeData(C.WIDEVINE_UUID, null, "mimeType", initData)));
+            //byte[] offlineAssetKeyId = offlineLicenseHelper.downloadLicense(new DrmInitData(new DrmInitData.SchemeData(C.WIDEVINE_UUID, null, "mimeType", initData)));
+            byte[] offlineAssetKeyId = offlineLicenseHelper.downloadLicense(new DrmInitData(new DrmInitData.SchemeData(C.WIDEVINE_UUID, "video/mp4", initData, false)));
 
             if (offlineAssetKeyId == null) {
                 return null;
@@ -73,7 +74,13 @@ public class WidevineDownloadLicenseManager {
             Pair<Long, Long> remainingTime = offlineLicenseHelper.getLicenseDurationRemainingSec(offlineAssetKeyId);
 
             Log.e(TAG, "Widevine license : " + Base64.encodeToString (offlineAssetKeyId, Base64.DEFAULT));
-            Log.e(TAG, "Widevine license expiration: " + remainingTime.toString());
+
+            if (remainingTime == null) {
+                return null;
+            }
+
+            Log.e(TAG, "Widevine license remaining seconds: " + remainingTime.first);
+            Log.e(TAG, "Widevine playback remaining seconds: " + remainingTime.second);
 
             if (remainingTime.first == 0 || remainingTime.second == 0) {
                 return null;
@@ -81,7 +88,7 @@ public class WidevineDownloadLicenseManager {
 
             return offlineAssetKeyId;
         }
-        catch (UnsupportedDrmException | DrmSession.DrmSessionException | IOException | InterruptedException e1) {
+        catch (UnsupportedDrmException | DrmSession.DrmSessionException e1) {
             e1.printStackTrace();
         }
 
