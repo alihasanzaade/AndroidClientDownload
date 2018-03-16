@@ -25,7 +25,7 @@ ext {
     releaseArtifact = 'empplayer-download'
     releaseVersion = 'r2.0.80'
     releaseDescription = 'The EMP Player library download module.'
-    libraryTag = 'r2.0.80'
+    libraryTag = 'master-SNAPSHOT'
 }
 
 android {
