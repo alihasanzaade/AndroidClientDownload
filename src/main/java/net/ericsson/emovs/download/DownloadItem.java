@@ -203,10 +203,13 @@ public class DownloadItem implements IDownload {
                 }
                 WidevineDownloadLicenseManager downloader = new WidevineDownloadLicenseManager(EMPRegistry.applicationContext());
 
-                String licenseWithToken = Uri.parse(licenseDetails.first)
-                        .buildUpon()
-                        .appendQueryParameter("token", "Bearer " + playToken)
-                        .build().toString();
+                String licenseWithToken = licenseDetails.first;
+                if (playToken != null) {
+                    Uri.parse(licenseDetails.first)
+                            .buildUpon()
+                            .appendQueryParameter("token", "Bearer " + playToken)
+                            .build().toString();
+                }
                 licenseDetails = new Pair<>(licenseWithToken, licenseDetails.second);
 
                 byte[] license = downloader.download(licenseDetails.first, licenseDetails.second);
