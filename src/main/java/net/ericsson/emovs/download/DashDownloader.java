@@ -1,5 +1,6 @@
 package net.ericsson.emovs.download;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -28,6 +29,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder; 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -57,6 +60,7 @@ class DashDownloader extends Thread {
 	final String MPD = "//urn:mpeg:dash:schema:mpd:2011:MPD";
 	final String REPRESENTATION = "Representation";
 	final String SEGMENT_TEMPLATE = "SegmentTemplate";
+	final String SEGMENT_TIMELINE = "SegmentTimeline";
 	final String MEDIA = "media";
 	final String BASE_URL = "BaseURL";
 	final String INITIALIZATION = "initialization";
@@ -313,31 +317,29 @@ class DashDownloader extends Thread {
     	}
     	return true;
     }
-    
-    public static long getDuration(String mediaPresentationDuration) {
-    	mediaPresentationDuration = mediaPresentationDuration.replaceAll("S", "");
-    	String[] durationParts = mediaPresentationDuration.split("M");
-    	
-    	int seconds = (int) Math.ceil(Double.parseDouble(durationParts[1]));
-    	
-    	String durationRest = durationParts[0]
-				.replaceAll("P", "")
-				.replaceAll("DT", " ")
-				.replaceAll("H", " ")
-				.replaceAll("M", " ");
-    		
-    		Scanner scanner = new Scanner (durationRest);
-    		
-    		// period id
-    		scanner.nextInt();	
-    		int pHours = scanner.nextInt();
-    		int pMinutes = scanner.nextInt();    		
-    		long duration = seconds + pMinutes*60 + pHours*3600;
 
-    		scanner.close();
-    		
-    		return duration;
-    }
+	public static long getDuration(String value) {
+		Matcher matcher = Pattern.compile("^(-)?P(([0-9]*)Y)?(([0-9]*)M)?(([0-9]*)D)?" + "(T(([0-9]*)H)?(([0-9]*)M)?(([0-9.]*)S)?)?$").matcher(value);
+		if (matcher.matches()) {
+			boolean negated = !TextUtils.isEmpty(matcher.group(1));
+			String years = matcher.group(3);
+			double durationSeconds = (years != null) ? Double.parseDouble(years) * 31556908 : 0;
+			String months = matcher.group(5);
+			durationSeconds += (months != null) ? Double.parseDouble(months) * 2629739 : 0;
+			String days = matcher.group(7);
+			durationSeconds += (days != null) ? Double.parseDouble(days) * 86400 : 0;
+			String hours = matcher.group(10);
+			durationSeconds += (hours != null) ? Double.parseDouble(hours) * 3600 : 0;
+			String minutes = matcher.group(12);
+			durationSeconds += (minutes != null) ? Double.parseDouble(minutes) * 60 : 0;
+			String seconds = matcher.group(14);
+			durationSeconds += (seconds != null) ? Double.parseDouble(seconds) : 0;
+			long durationMillis = (long) (durationSeconds * 1000);
+			return negated ? -durationMillis : durationMillis;
+		} else {
+			return (long) (Double.parseDouble(value) * 3600 * 1000);
+		}
+	}
     
     private boolean loadManifest(URL u, File manifestFile){
 		for(int i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i) {
@@ -385,7 +387,8 @@ class DashDownloader extends Thread {
 			Node mediaPresentationDurationNode = mpdAttrs.getNamedItem("mediaPresentationDuration");
 			String mediaPresentationDuration = mediaPresentationDurationNode.getNodeValue();
 
-            remoteManifest.durationSeconds = getDuration(mediaPresentationDuration);
+			// TODO: refactor this to use milliseconds
+            remoteManifest.durationSeconds = Math.ceil(getDuration(mediaPresentationDuration) / 1000.0);
 
 			System.out.println("Stream Duration: " + remoteManifest.durationSeconds);
 
@@ -394,6 +397,28 @@ class DashDownloader extends Thread {
 			for (int i = 0; i < adaptationSets.getLength(); i++) {
 				Node set = adaptationSets.item(i);
 				AdaptationSet remoteAdaptationSet = new AdaptationSet();
+
+				Node period = set.getParentNode();
+				NodeList baseUrlCands = period.getChildNodes();
+				String baseUrl = null;
+				if (baseUrl == null) {
+					for (int k = 0; k < baseUrlCands.getLength(); ++k) {
+						Node baseUrlCand = baseUrlCands.item(k);
+						if("BaseURL".equals(baseUrlCand.getNodeName())) {
+							if (baseUrlCand.getTextContent().startsWith("http") || baseUrlCand.getTextContent().startsWith("//")) {
+								baseUrl = baseUrlCand.getTextContent();
+								// TODO: rename path for local base url
+							}
+							else {
+								File mpdFile = new File(u.getPath());
+								String parentPath = mpdFile.getParent();
+								URL parentUrl = new URL(u.getProtocol( ), u.getHost( ), u.getPort( ), parentPath);
+								baseUrl = parentUrl.toString() + "/" + baseUrlCand.getTextContent();
+								baseUrlCand.setTextContent(conf.folder + "/" + baseUrlCand.getTextContent());
+							}
+						}
+					}
+				}
 
 				String mimeType = set.getAttributes().getNamedItem("mimeType") != null ? set.getAttributes().getNamedItem("mimeType").getNodeValue() : null;
 				remoteAdaptationSet.lang = set.getAttributes().getNamedItem("lang") != null ? set.getAttributes().getNamedItem("lang").getNodeValue() : null;
@@ -411,13 +436,36 @@ class DashDownloader extends Thread {
 						continue;
 					}
 					if (setChild.getNodeName().equals(SEGMENT_TEMPLATE)) {
-                        remoteAdaptationSet.segmentDuration = Long.parseLong(setChild.getAttributes().getNamedItem(DURATION).getNodeValue());
-                        remoteAdaptationSet.startNumber = Long.parseLong(setChild.getAttributes().getNamedItem("startNumber").getNodeValue());
-                        remoteAdaptationSet.timescale = Long.parseLong(setChild.getAttributes().getNamedItem(TIMESCALE).getNodeValue());
-                        remoteAdaptationSet.initSegment = setChild.getAttributes().getNamedItem(INITIALIZATION) != null ? setChild.getAttributes().getNamedItem(INITIALIZATION).getNodeValue() : null;
-                        remoteAdaptationSet.segmentTemplate = setChild.getAttributes().getNamedItem(MEDIA).getNodeValue();
-                        remoteAdaptationSet.segmentDurationSeconds = remoteAdaptationSet.segmentDuration / remoteAdaptationSet.timescale;
-                        remoteAdaptationSet.segmentCount = (long) Math.ceil(((double) remoteManifest.durationSeconds) / remoteAdaptationSet.segmentDurationSeconds);
+						remoteAdaptationSet.timescale = Long.parseLong(setChild.getAttributes().getNamedItem(TIMESCALE).getNodeValue());
+						remoteAdaptationSet.initSegment = setChild.getAttributes().getNamedItem(INITIALIZATION) != null ? setChild.getAttributes().getNamedItem(INITIALIZATION).getNodeValue() : null;
+						remoteAdaptationSet.segmentTemplate = setChild.getAttributes().getNamedItem(MEDIA).getNodeValue();
+
+						boolean timlineFound = false;
+						NodeList templateChildren = setChild.getChildNodes();
+						for (int l = 0; l < templateChildren.getLength(); l++) {
+							Node timeline = templateChildren.item(l);
+							if (SEGMENT_TIMELINE.equals(timeline.getNodeName())) {
+								timlineFound = true;
+								NodeList SChildren = timeline.getChildNodes();
+								for (int m = 0; m < SChildren.getLength(); m++) {
+									Node S = SChildren.item(m);
+									if ("S".equals(S.getNodeName()) && S.getAttributes().getNamedItem("t") != null) {
+										remoteAdaptationSet.increment = Long.parseLong(S.getAttributes().getNamedItem("d").getNodeValue());
+										remoteAdaptationSet.startNumber = Long.parseLong(S.getAttributes().getNamedItem("t").getNodeValue());
+										remoteAdaptationSet.segmentDuration = remoteAdaptationSet.increment;
+									}
+								}
+							}
+						}
+
+						if (!timlineFound) {
+							remoteAdaptationSet.increment = 1;
+							remoteAdaptationSet.segmentDuration = Long.parseLong(setChild.getAttributes().getNamedItem(DURATION).getNodeValue());
+							remoteAdaptationSet.startNumber = Long.parseLong(setChild.getAttributes().getNamedItem("startNumber").getNodeValue());
+						}
+
+                        remoteAdaptationSet.segmentDurationSeconds = ((double) remoteAdaptationSet.segmentDuration) / remoteAdaptationSet.timescale;
+                        remoteAdaptationSet.segmentCount = (long) Math.ceil(remoteManifest.durationSeconds / remoteAdaptationSet.segmentDurationSeconds);
 					}
 					else if (setChild.getNodeName().equals(REPRESENTATION)) {
                         String trackMimeType = setChild.getAttributes().getNamedItem("mimeType") != null ? setChild.getAttributes().getNamedItem("mimeType").getNodeValue() : null;
@@ -442,6 +490,12 @@ class DashDownloader extends Thread {
                         }
 
                         remoteTrack.id = setChild.getAttributes().getNamedItem("id").getNodeValue();
+
+                        // trik mode is a trick used for fast forward and rewind - not supported for download yet
+                        if (remoteTrack.id.contains("mode=trik")) {
+                        	continue;
+						}
+
                         remoteTrack.mimeType = trackMimeType;
                         remoteTrack.bandwidth = Long.parseLong(setChild.getAttributes().getNamedItem("bandwidth").getNodeValue());
 
@@ -460,15 +514,19 @@ class DashDownloader extends Thread {
 						for (int j=0; j < repChildren.getLength(); ++j) {
 							Node repsentation = repChildren.item(j);
 							if (repsentation.getNodeName().equals(BASE_URL)) {
-								String baseUrl = repsentation.getTextContent();
-                                remoteTrack.baseUrl = baseUrl;
+								String baseUrlInner = repsentation.getTextContent();
+                                remoteTrack.baseUrl = baseUrlInner;
 
-								URL mediaGrab = new URL(baseUrl);
+								URL mediaGrab = new URL(baseUrlInner);
 								String host = mediaGrab.getHost();
 								String protocol = mediaGrab.getProtocol();
 								System.out.println("EMP HOST+PROTOCOL: " + protocol+"://"+host);
-								repsentation.setTextContent(baseUrl.replace(protocol+"://"+host+"", conf.folder));
+								repsentation.setTextContent(baseUrlInner.replace(protocol+"://"+host+"", conf.folder));
 							}
+						}
+
+						if (remoteTrack.baseUrl == null) {
+							remoteTrack.baseUrl = baseUrl;
 						}
 
                         remoteTracks.add(remoteTrack);
@@ -516,7 +574,7 @@ class DashDownloader extends Thread {
         if (chunkIndex == adaptationSet.startNumber) {
             String fileNamePath = null;
             try {
-                fileNamePath = new URL(urlRaw).getFile().replace("$Number$", "*");
+                fileNamePath = new URL(urlRaw).getFile().replace("$Time$", "*").replace("$Number$", "*");
                 File destFile = new File(destFilePath + fileNamePath);
                 String fileWildcard = destFile.getName();
                 FileFilter fileFilter = new WildcardFileFilter(fileWildcard);
@@ -527,8 +585,9 @@ class DashDownloader extends Thread {
                         memory.put(f.getName(), null);
                     }
                 }
-                for (long i = adaptationSet.startNumber; i < Integer.MAX_VALUE; ++i) {
-                    String fToCheck = new URL(urlRaw).getFile().replace("$Number$", Long.toString(i));
+                for (long i = adaptationSet.startNumber; i < Integer.MAX_VALUE; i += adaptationSet.increment) {
+                	String suffix = Long.toString(i);
+                    String fToCheck = new URL(urlRaw).getFile().replace("$Number$", suffix).replace("$Time$", suffix);
                     if (memory.containsKey(new File(fToCheck).getName()) == false) {
                         incIndex(indexId, i - adaptationSet.startNumber);
                         break;
@@ -578,7 +637,7 @@ class DashDownloader extends Thread {
                 long chunkIndex = getIndex(adaptationSet, overallId);
                 final String chunkIndexStr = Long.toString(chunkIndex);
 
-                conf.currentSegment.put(overallId, chunkIndex);
+                conf.currentSegment.put(overallId, chunkIndex / adaptationSet.increment);
 
                 if (adaptationSet.segmentCount > 0) {
                     double totalChunks = 0, totalCurrent = 0;
@@ -594,12 +653,12 @@ class DashDownloader extends Thread {
                     notifyUpdatersProgress(Math.round(totalCurrent * 100.0 / totalChunks));
                 }
 
-                if (chunkIndex > adaptationSet.segmentCount) {
+                if (chunkIndex / adaptationSet.increment > adaptationSet.segmentCount) {
                     conf.eos.put(overallId, true);
                     continue;
                 }
 
-                final String url = urlRaw.replace("$Number$", chunkIndexStr);
+                final String url = urlRaw.replace("$Number$", chunkIndexStr).replace("$Time$", chunkIndexStr);
 
                 String fileName = new URL(url).getFile();
                 String destFilePath = conf.folder + fileName;
@@ -616,7 +675,7 @@ class DashDownloader extends Thread {
                     writers.add(ifw);
                     ifw.start();
 
-                    incIndex(overallId, 1);
+                    incIndex(overallId, adaptationSet.increment);
                 }
 
                 j++;

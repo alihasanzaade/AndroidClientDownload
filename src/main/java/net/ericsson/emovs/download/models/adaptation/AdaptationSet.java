@@ -18,8 +18,9 @@ public class AdaptationSet {
     public long timescale;
     public long segmentDuration;
     public long startNumber;
+    public long increment;
     public ArrayList<Track> tracks;
-    public long segmentDurationSeconds;
+    public double segmentDurationSeconds;
     public long segmentCount;
     public String lang;
 
@@ -41,5 +42,6 @@ public class AdaptationSet {
         this.segmentDurationSeconds = other.segmentDurationSeconds;
         this.segmentCount = other.segmentCount;
         this.lang = other.lang;
+        this.increment = other.increment;
     }
 }
