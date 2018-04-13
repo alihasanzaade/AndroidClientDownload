@@ -28,7 +28,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -387,10 +386,10 @@ class DashDownloader extends Thread {
 			Node mediaPresentationDurationNode = mpdAttrs.getNamedItem("mediaPresentationDuration");
 			String mediaPresentationDuration = mediaPresentationDurationNode.getNodeValue();
 
-			// TODO: refactor this to use milliseconds
-            remoteManifest.durationSeconds = Math.ceil(getDuration(mediaPresentationDuration) / 1000.0);
+//            remoteManifest.durationMs = getDuration(mediaPresentationDuration) / 1000.0;
+			remoteManifest.durationMs = getDuration(mediaPresentationDuration);
 
-			System.out.println("Stream Duration: " + remoteManifest.durationSeconds);
+			System.out.println("Stream Duration: " + remoteManifest.durationMs);
 
 			NodeList adaptationSets = (NodeList) xpath.compile(ADAPTATION_SET).evaluate(doc, XPathConstants.NODESET);
 
@@ -464,8 +463,8 @@ class DashDownloader extends Thread {
 							remoteAdaptationSet.startNumber = Long.parseLong(setChild.getAttributes().getNamedItem("startNumber").getNodeValue());
 						}
 
-                        remoteAdaptationSet.segmentDurationSeconds = ((double) remoteAdaptationSet.segmentDuration) / remoteAdaptationSet.timescale;
-                        remoteAdaptationSet.segmentCount = (long) Math.ceil(remoteManifest.durationSeconds / remoteAdaptationSet.segmentDurationSeconds);
+                        remoteAdaptationSet.segmentDurationMs = (remoteAdaptationSet.segmentDuration) * 1000 / remoteAdaptationSet.timescale;
+                        remoteAdaptationSet.segmentCount = (long) Math.ceil(remoteManifest.durationMs / remoteAdaptationSet.segmentDurationMs);
 					}
 					else if (setChild.getNodeName().equals(REPRESENTATION)) {
                         String trackMimeType = setChild.getAttributes().getNamedItem("mimeType") != null ? setChild.getAttributes().getNamedItem("mimeType").getNodeValue() : null;

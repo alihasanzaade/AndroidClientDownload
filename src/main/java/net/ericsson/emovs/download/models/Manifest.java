@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 
 public class Manifest {
-    public double durationSeconds;
+    public long durationMs;
     public ArrayList<AdaptationSet> adaptationSets;
 
     public Manifest() {

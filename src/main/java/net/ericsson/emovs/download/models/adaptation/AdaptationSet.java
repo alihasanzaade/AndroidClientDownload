@@ -20,7 +20,7 @@ public class AdaptationSet {
     public long startNumber;
     public long increment;
     public ArrayList<Track> tracks;
-    public double segmentDurationSeconds;
+    public long segmentDurationMs;
     public long segmentCount;
     public String lang;
 
@@ -39,7 +39,7 @@ public class AdaptationSet {
         this.segmentDuration = other.segmentDuration;
         this.startNumber = other.startNumber;
         this.tracks = other.tracks;
-        this.segmentDurationSeconds = other.segmentDurationSeconds;
+        this.segmentDurationMs = other.segmentDurationMs;
         this.segmentCount = other.segmentCount;
         this.lang = other.lang;
         this.increment = other.increment;
