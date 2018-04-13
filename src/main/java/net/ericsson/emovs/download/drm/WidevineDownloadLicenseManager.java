@@ -63,7 +63,10 @@ public class WidevineDownloadLicenseManager {
             // GenericDrmCallback customDrmCallback = new GenericDrmCallback(buildHttpDataSourceFactory(true), licenseUrl);
             OfflineLicenseHelper offlineLicenseHelper = OfflineLicenseHelper.newWidevineInstance(licenseUrl, buildHttpDataSourceFactory(true));
 
-            byte[] initData = Base64.decode(initDataBase64, Base64.DEFAULT);
+            byte[] initData = null;
+            if (initDataBase64 != null) {
+                initData = Base64.decode(initDataBase64, Base64.DEFAULT);
+            }
             //byte[] offlineAssetKeyId = offlineLicenseHelper.downloadLicense(new DrmInitData(new DrmInitData.SchemeData(C.WIDEVINE_UUID, null, "mimeType", initData)));
             byte[] offlineAssetKeyId = offlineLicenseHelper.downloadLicense(new DrmInitData(new DrmInitData.SchemeData(C.WIDEVINE_UUID, "video/mp4", initData, false)));
 

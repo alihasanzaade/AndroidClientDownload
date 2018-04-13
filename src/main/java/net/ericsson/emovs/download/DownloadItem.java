@@ -162,7 +162,13 @@ public class DownloadItem implements IDownload {
 
                 Log.d(TAG, "Locator: " + entitlement.mediaLocator);
 
-                downloadLicense(assetId, entitlement.mediaLocator, entitlement.playToken);
+                if (entitlement.licenseServerUrl != null) {
+                    downloadLicense(assetId, entitlement.licenseServerUrl, null);
+                }
+                else {
+                    fetchAndDownloadLicense(assetId, entitlement.mediaLocator, entitlement.playToken);
+                }
+
                 downloadMedia(self.downloadPath, entitlement, callback);
                 createDownloadedAsset(self.downloadPath + "/manifest_local.mpd");
             }
@@ -194,7 +200,7 @@ public class DownloadItem implements IDownload {
         saveDownloadInfo();
     }
 
-    private void downloadLicense(final String mediaId, String manifestUrl, final String playToken) {
+    private void fetchAndDownloadLicense(final String mediaId, String manifestUrl, final String playToken) {
         DashDetails.getLicenseDetails(manifestUrl, false, new ParameterizedRunnable<Pair<String, String>>() {
             @Override
             public void run(Pair<String, String> licenseDetails) {
@@ -218,6 +224,23 @@ public class DownloadItem implements IDownload {
                 }
             }
         });
+    }
+
+    private void downloadLicense(final String mediaId, final String licenseUrlWithToken, String initData) {
+        WidevineDownloadLicenseManager downloader = new WidevineDownloadLicenseManager(EMPRegistry.applicationContext());
+
+        //String licenseWithToken = licenseDetails.first;
+        /*if (playToken != null) {
+            Uri.parse(licenseDetails.first)
+                    .buildUpon()
+                    .appendQueryParameter("token", "Bearer " + playToken)
+                    .build().toString();
+        }*/
+
+        byte[] license = downloader.download(licenseUrlWithToken, initData);
+        if(license != null) {
+            downloader.store(mediaId, license);
+        }
     }
 
     private void downloadMedia(String downloadFolder, Entitlement entitlement, final IDownloadEventListener callback) {
