@@ -41,7 +41,7 @@ public class DashDownloaderTest {
     @Test
     public void manifestDurationTest() throws Exception {
         long timeSeconds = DashDownloader.getDuration("P0DT0H1M16.480S");
-        Assert.assertEquals(timeSeconds, 77);
+        Assert.assertEquals(timeSeconds, 76480);
     }
 
     @Test
