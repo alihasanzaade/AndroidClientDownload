@@ -99,11 +99,9 @@
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven.wagon:wagon-http-lightweight:1.0-beta-6@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.robolectric:sandbox:3.5.1@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.codehaus.plexus:plexus-interpolation:1.11@jar" level="project" />
-    <orderEntry type="library" exported="" name="android.arch.lifecycle:common:1.0.0@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.robolectric:annotations:3.5.1@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.ow2.asm:asm-tree:5.0.1@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven:maven-repository-metadata:2.2.1@jar" level="project" />
-    <orderEntry type="library" exported="" name="android.arch.lifecycle:runtime-1.0.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven.wagon:wagon-http-shared:1.0-beta-6@jar" level="project" />
     <orderEntry type="library" exported="" name="com.google.android.exoplayer:exoplayer-ui-2.7.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.robolectric:robolectric:3.5.1@jar" level="project" />
@@ -112,13 +110,12 @@
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.ant:ant-launcher:1.8.0@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="nekohtml:xercesMinimal:1.9.6.2@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven:maven-profile:2.2.1@jar" level="project" />
+    <orderEntry type="library" exported="" name="com.android.support:support-core-utils-26.0.1" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven:maven-project:2.2.1@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-compat-26.1.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.hamcrest:hamcrest-core:1.3@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.ow2.asm:asm:5.0.1@jar" level="project" />
     <orderEntry type="library" exported="" name="com.google.android.exoplayer:exoplayer-smoothstreaming-2.7.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.robolectric:shadows-framework:3.5.1@jar" level="project" />
-    <orderEntry type="library" exported="" name="android.arch.core:common:1.0.0@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven:maven-ant-tasks:2.1.3@jar" level="project" />
     <orderEntry type="library" exported="" name="com.google.android.exoplayer:exoplayer-2.7.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="nekohtml:nekohtml:1.9.6.2@jar" level="project" />
@@ -137,12 +134,12 @@
     <orderEntry type="library" exported="" scope="TEST" name="com.google.protobuf:protobuf-java:2.6.1@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.ant:ant:1.8.0@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.codehaus.plexus:plexus-utils:1.5.15@jar" level="project" />
-    <orderEntry type="library" exported="" name="com.android.support:support-core-utils-26.1.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven:maven-error-diagnostics:2.2.1@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="net.bytebuddy:byte-buddy-agent:1.8.5@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven.wagon:wagon-file:1.0-beta-6@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="com.thoughtworks.xstream:xstream:1.4.8@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.objenesis:objenesis:2.6@jar" level="project" />
+    <orderEntry type="library" exported="" name="com.android.support:support-compat-26.0.1" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="com.almworks.sqlite4java:sqlite4java:0.282@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven.wagon:wagon-provider-api:1.0-beta-6@jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="org.apache.maven:maven-artifact-manager:2.2.1@jar" level="project" />
