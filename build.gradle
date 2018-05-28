@@ -23,7 +23,7 @@ group='com.github.EricssonBroadcastServices'
 
 ext {
     releaseArtifact = 'empplayer-download'
-    releaseVersion = 'r2.0.90-2'
+    releaseVersion = 'DEV-LATEST-VERSION'
     releaseDescription = 'The EMP Player library download module.'
     libraryTag = 'master-SNAPSHOT'
 }
