@@ -163,7 +163,7 @@ public class DownloadItem implements IDownload {
                 Log.d(TAG, "Locator: " + entitlement.mediaLocator);
 
                 if (entitlement.licenseServerUrl != null) {
-                    downloadLicense(assetId, entitlement.licenseServerUrl, null);
+                    downloadLicense(assetId, entitlement.mediaLocator, entitlement.licenseServerUrl, entitlement.playToken);
                 }
                 else {
                     fetchAndDownloadLicense(assetId, entitlement.mediaLocator, entitlement.playToken);
@@ -226,21 +226,30 @@ public class DownloadItem implements IDownload {
         });
     }
 
-    private void downloadLicense(final String mediaId, final String licenseUrlWithToken, String initData) {
-        WidevineDownloadLicenseManager downloader = new WidevineDownloadLicenseManager(EMPRegistry.applicationContext());
+    private void downloadLicense(final String mediaId, String manifestUrl, final String licenseUrlWithToken2, final String playToken) {
+        DashDetails.getLicenseDetailsVemup(manifestUrl, false, new ParameterizedRunnable<Pair<String, String>>() {
+            @Override
+            public void run(Pair<String, String> licenseDetails) {
+                if (licenseDetails == null) {
+                    return;
+                }
+                WidevineDownloadLicenseManager downloader = new WidevineDownloadLicenseManager(EMPRegistry.applicationContext());
 
-        //String licenseWithToken = licenseDetails.first;
-        /*if (playToken != null) {
-            Uri.parse(licenseDetails.first)
-                    .buildUpon()
-                    .appendQueryParameter("token", "Bearer " + playToken)
-                    .build().toString();
-        }*/
+                String licenseUrlWithToken = licenseUrlWithToken2;
+                if (licenseUrlWithToken2 != null) {
+                    licenseUrlWithToken = Uri.parse(licenseUrlWithToken)
+                            .buildUpon()
+                            .appendQueryParameter("token", "Bearer " + playToken)
+                            .build().toString();
+                }
+                licenseDetails = new Pair<>(licenseUrlWithToken, licenseDetails.second);
 
-        byte[] license = downloader.download(licenseUrlWithToken, initData);
-        if(license != null) {
-            downloader.store(mediaId, license);
-        }
+                byte[] license = downloader.download(licenseDetails.first, licenseDetails.second);
+                if(license != null) {
+                    downloader.store(mediaId, license);
+                }
+            }
+        });
     }
 
     private void downloadMedia(String downloadFolder, Entitlement entitlement, final IDownloadEventListener callback) {
