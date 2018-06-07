@@ -392,14 +392,14 @@ class DashDownloader extends Thread {
 			System.out.println("Stream Duration: " + remoteManifest.durationMs);
 
 			NodeList adaptationSets = (NodeList) xpath.compile(ADAPTATION_SET).evaluate(doc, XPathConstants.NODESET);
+			String baseUrl = null;
 
 			for (int i = 0; i < adaptationSets.getLength(); i++) {
 				Node set = adaptationSets.item(i);
 				AdaptationSet remoteAdaptationSet = new AdaptationSet();
-
 				Node period = set.getParentNode();
 				NodeList baseUrlCands = period.getChildNodes();
-				String baseUrl = null;
+
 				if (baseUrl == null) {
 					for (int k = 0; k < baseUrlCands.getLength(); ++k) {
 						Node baseUrlCand = baseUrlCands.item(k);

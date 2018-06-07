@@ -162,8 +162,8 @@ public class DownloadItem implements IDownload {
 
                 Log.d(TAG, "Locator: " + entitlement.mediaLocator);
 
-                if (entitlement.licenseServerUrl != null) {
-                    downloadLicense(assetId, entitlement.mediaLocator, entitlement.licenseServerUrl, entitlement.playToken);
+                if (entitlement.licenseServerUrl != null && !entitlement.licenseServerUrl.equals("")) {
+                    downloadLicense(assetId, entitlement.mediaLocator, entitlement.licenseServerUrl);
                 }
                 else {
                     fetchAndDownloadLicense(assetId, entitlement.mediaLocator, entitlement.playToken);
@@ -226,25 +226,18 @@ public class DownloadItem implements IDownload {
         });
     }
 
-    private void downloadLicense(final String mediaId, String manifestUrl, final String licenseUrlWithToken2, final String playToken) {
+    private void downloadLicense(final String mediaId, String manifestUrl, final String licenseUrlWithToken) {
         DashDetails.getLicenseDetailsVemup(manifestUrl, false, new ParameterizedRunnable<Pair<String, String>>() {
             @Override
             public void run(Pair<String, String> licenseDetails) {
                 if (licenseDetails == null) {
                     return;
                 }
+
                 WidevineDownloadLicenseManager downloader = new WidevineDownloadLicenseManager(EMPRegistry.applicationContext());
-
-                String licenseUrlWithToken = licenseUrlWithToken2;
-                if (licenseUrlWithToken2 != null) {
-                    licenseUrlWithToken = Uri.parse(licenseUrlWithToken)
-                            .buildUpon()
-                            .appendQueryParameter("token", "Bearer " + playToken)
-                            .build().toString();
-                }
                 licenseDetails = new Pair<>(licenseUrlWithToken, licenseDetails.second);
-
                 byte[] license = downloader.download(licenseDetails.first, licenseDetails.second);
+
                 if(license != null) {
                     downloader.store(mediaId, license);
                 }
