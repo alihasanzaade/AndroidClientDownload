@@ -47,7 +47,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-class DashDownloader extends Thread {
+public class DashDownloader extends Thread {
 	final int MAX_CONCURRENT_DOWNLOADS = 2;
 	final int MAX_DOWNLOAD_ATTEMPTS = 5;
 	final int MAX_SEGMENT_DOWNLOAD_TIMEOUT = 20000;

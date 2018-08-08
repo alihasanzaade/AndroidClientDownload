@@ -11,12 +11,12 @@ import java.util.UUID;
  */
 
 public class DownloadInfo implements Serializable {
-    DownloadItem.State state;
-    double progress;
-    long downloadedBytes;
-    String downloadPath;
-    UUID uuid;
-    IPlayable onlinePlayable;
-    EmpOfflineAsset offlinePlayable;
-    DownloadProperties properties;
+    public DownloadItem.State state;
+    public double progress;
+    public long downloadedBytes;
+    public String downloadPath;
+    public UUID uuid;
+    public IPlayable onlinePlayable;
+    public EmpOfflineAsset offlinePlayable;
+    public DownloadProperties properties;
 }

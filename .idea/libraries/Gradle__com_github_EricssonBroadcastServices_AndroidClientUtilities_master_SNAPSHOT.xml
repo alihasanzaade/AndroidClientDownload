@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: com.github.EricssonBroadcastServices:AndroidClientUtilities-master-SNAPSHOT">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/build/intermediates/exploded-aar/com.github.EricssonBroadcastServices/AndroidClientUtilities/master-SNAPSHOT/res" />
+      <root url="jar://$PROJECT_DIR$/build/intermediates/exploded-aar/com.github.EricssonBroadcastServices/AndroidClientUtilities/master-SNAPSHOT/jars/libs/commons-io-2.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/build/intermediates/exploded-aar/com.github.EricssonBroadcastServices/AndroidClientUtilities/master-SNAPSHOT/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
