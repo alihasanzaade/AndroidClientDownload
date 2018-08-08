@@ -382,10 +382,7 @@ public class DashDownloader extends Thread {
 			Node mpdRoot = (Node) xpath.compile(MPD).evaluate(doc, XPathConstants.NODE);
 
 			NamedNodeMap mpdAttrs = mpdRoot.getAttributes();
-			Node mediaPresentationDurationNode = mpdAttrs.getNamedItem("mediaPresentationDuration");
-			String mediaPresentationDuration = mediaPresentationDurationNode.getNodeValue();
 
-            remoteManifest.durationSeconds = getDuration(mediaPresentationDuration);
 
 			System.out.println("Stream Duration: " + remoteManifest.durationSeconds);
 
