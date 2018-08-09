@@ -394,7 +394,6 @@ public class DashDownloader extends Thread {
 
 				String mimeType = set.getAttributes().getNamedItem("mimeType") != null ? set.getAttributes().getNamedItem("mimeType").getNodeValue() : null;
 				remoteAdaptationSet.lang = set.getAttributes().getNamedItem("lang") != null ? set.getAttributes().getNamedItem("lang").getNodeValue() : null;
-                remoteAdaptationSet.id = set.getAttributes().getNamedItem("id").getNodeValue();
 
 				if(set == null) continue;
 
@@ -438,7 +437,7 @@ public class DashDownloader extends Thread {
                             continue;
                         }
 
-                        remoteTrack.id = setChild.getAttributes().getNamedItem("id").getNodeValue();
+                        //remoteTrack.id = setChild.getAttributes().getNamedItem("id").getNodeValue();
                         remoteTrack.mimeType = trackMimeType;
                         remoteTrack.bandwidth = Long.parseLong(setChild.getAttributes().getNamedItem("bandwidth").getNodeValue());
 
